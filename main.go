@@ -4,14 +4,9 @@
 package main
 
 import (
-	"github.com/teocci/go-concurrency-samples/src/core"
-	"os"
+	"github.com/teocci/go-concurrency-samples/internal/cmd"
 )
 
 func main() {
-	s, ok := core.New(os.Args[1:])
-	if !ok {
-		os.Exit(1)
-	}
-	s.Wait()
+	cmd.Execute()
 }
