@@ -3,6 +3,7 @@ module github.com/teocci/go-concurrency-samples
 go 1.16
 
 require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.5.0 // indirect
 	github.com/gookit/color v1.4.2
 	github.com/spf13/cast v1.4.1 // indirect

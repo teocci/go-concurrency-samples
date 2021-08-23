@@ -6,16 +6,20 @@ package core
 import (
 	"context"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/teocci/go-concurrency-samples/internal/config"
+	"github.com/teocci/go-concurrency-samples/internal/dirfiles"
 	"github.com/teocci/go-concurrency-samples/internal/logger"
 	"github.com/teocci/go-concurrency-samples/internal/unzip"
 	"io/fs"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
 const regexSessionNum = `([^-]*)st-logger`
+const droneName = "drone-01"
 
 // Core is an instance of rtsp-simple-server.
 type Core struct {
@@ -30,12 +34,11 @@ type Core struct {
 }
 
 type FlightLog struct {
-	SessionID   string
-	FCCFile     string
-	GEOdataFile string
+	SessionToken string
+	Files        map[string]string
 }
 
-var flightLogs map[string]FlightLog
+var flightLogs map[string]*FlightLog
 
 func Start(f string) error {
 	var err error
@@ -50,7 +53,7 @@ func Start(f string) error {
 		fmt.Println("----------")
 	}
 
-	flightLogs =  map[string]FlightLog{}
+	flightLogs = map[string]*FlightLog{}
 
 	err = filepath.WalkDir(config.TempDir, process)
 	if err != nil {
@@ -67,7 +70,7 @@ func process(path string, f fs.DirEntry, e error) error {
 	}
 
 	if !f.IsDir() {
-		d, f := filepath.Split(path)
+		d, ff := filepath.Split(path)
 		p := filepath.Dir(d)
 		pDir, pName := filepath.Split(p)
 
@@ -77,15 +80,40 @@ func process(path string, f fs.DirEntry, e error) error {
 			fmt.Println(match, "found at index", i)
 		}
 
+		f := strings.Split(ff, ".")[0]
+		id := strings.Split(pName, "st-logger")[0]
+
 		println("dir:", d)
-		println("file:", f)
+		println("file:", ff)
 		println("parent:", p)
 		println("parent-dir:", pDir)
 		println("parent-file:", pName)
+		println("id:", id)
 
+		t, err := dirfiles.Hash(id + droneName)
+		if err != nil {
+			return err
+		}
+		token := strconv.Itoa(int(t))
+		println("sessionToken:", token)
 
+		if _, ok := flightLogs[token]; ok {
+			flightLogs[token].Files[f] = path
+		} else {
+			var fl = new(FlightLog)
+			fl.SessionToken = token
+			fl.Files = map[string]string{}
+			fl.Files[f] = path
 
+			flightLogs[token] = fl
+		}
+
+		spew.Dump(flightLogs)
 	}
 
 	return nil
 }
+
+
+
+
