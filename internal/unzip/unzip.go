@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-// Extract will decompress a zip archive, moving all dirfiles and folders
+// Extract will decompress a zip archive, moving all dir-files and folders
 // within the zip file source to an output directory destination.
 func Extract(src string, dest string) ([]string, error) {
 	var filenames []string
