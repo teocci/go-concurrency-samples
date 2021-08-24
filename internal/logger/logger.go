@@ -119,6 +119,60 @@ func (l *Logger) Log(level Level, format string, args ...interface{}) {
 	}
 }
 
+// Info logs with the Info severity.
+// Arguments are handled in the manner of fmt.Print.
+func (l *Logger) Info(v ...interface{}) {
+	l.Log(sInfo, fmt.Sprint(v...))
+}
+
+// Infoln logs with the Info severity.
+// Arguments are handled in the manner of fmt.Println.
+func (l *Logger) Infoln(v ...interface{}) {
+	l.Log(sInfo, fmt.Sprintln(v...))
+}
+
+// Infof logs with the Info severity.
+// Arguments are handled in the manner of fmt.Printf.
+func (l *Logger) Infof(format string, v ...interface{}) {
+	l.Log(sInfo, fmt.Sprintf(format, v...))
+}
+
+// Warning logs with the Warning severity.
+// Arguments are handled in the manner of fmt.Print.
+func (l *Logger) Warning(v ...interface{}) {
+	l.Log(sWarn, fmt.Sprint(v...))
+}
+
+// Warningln logs with the Warning severity.
+// Arguments are handled in the manner of fmt.Println.
+func (l *Logger) Warningln(v ...interface{}) {
+	l.Log(sWarn, fmt.Sprintln(v...))
+}
+
+// Warningf logs with the Warning severity.
+// Arguments are handled in the manner of fmt.Printf.
+func (l *Logger) Warningf(format string, v ...interface{}) {
+	l.Log(sWarn, fmt.Sprintf(format, v...))
+}
+
+// Error logs with the ERROR severity.
+// Arguments are handled in the manner of fmt.Print.
+func (l *Logger) Error(v ...interface{}) {
+	l.Log(sError, fmt.Sprint(v...))
+}
+
+// Errorln logs with the ERROR severity.
+// Arguments are handled in the manner of fmt.Println.
+func (l *Logger) Errorln(v ...interface{}) {
+	l.Log(sError, fmt.Sprintln(v...))
+}
+
+// Errorf logs with the Error severity.
+// Arguments are handled in the manner of fmt.Printf.
+func (l *Logger) Errorf(format string, v ...interface{}) {
+	l.Log(sError, fmt.Sprintf(format, v...))
+}
+
 // Fatal uses the default logger, logs with the sFatal severity,
 // and ends with os.Exit(1).
 // Arguments are handled in the manner of fmt.Print.
