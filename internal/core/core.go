@@ -21,8 +21,10 @@ import (
 	"strings"
 )
 
-const regexSessionNum = `(?P<id>^[0-9]+)(?P<postfix>st.logger$)`
-const droneName = "drone-01"
+const (
+	regexSessionNum = `(?P<id>^[0-9]+)(?P<postfix>st.logger$)`
+	droneName       = "drone-01"
+)
 
 // Core is an instance of rtsp-simple-server.
 type Core struct {
@@ -47,10 +49,19 @@ type FlightLog struct {
 
 var flightLogs map[string]*FlightLog
 
-func Start(f string) error {
+func Start(f string, isSplit bool) error {
 	var err error
+	var fName = f
 
-	files, err := unzip.Extract(f, config.TempDir)
+	if isSplit {
+		fName, _, err = unzip.Merge(f, config.TempDir)
+		if err != nil {
+			return err
+		}
+	}
+
+	dest := filepath.Join(config.TempDir, droneName)
+	files, err := unzip.Extract(fName, dest)
 	if err != nil {
 		return err
 	}
@@ -85,7 +96,7 @@ func process(path string, f fs.DirEntry, e error) error {
 		return e
 	}
 
-	if !f.IsDir()  {
+	if !f.IsDir() {
 		d, ff := filepath.Split(path)
 		parent := filepath.Dir(d)
 		base, pName := filepath.Split(parent)
@@ -101,7 +112,6 @@ func process(path string, f fs.DirEntry, e error) error {
 			id := re.FindStringSubmatch(pName)[1]
 			//fmt.Printf("SOLO: %#v\n", re.FindStringSubmatch(pName))
 			//fmt.Printf("%#v\n", re.SubexpNames())
-
 
 			//fmt.Println("id:", id)
 
@@ -167,7 +177,7 @@ func processCSVFiles(fl *FlightLog) error {
 	// create a file writer
 	rttFile := fl.LogID + "_RTTdata"
 	fmt.Println("rttFile:", rttFile)
-	outFile := filepath.Join(fl.LoggerDir, rttFile + ".csv")
+	outFile := filepath.Join(fl.LoggerDir, rttFile+".csv")
 
 	w, err := os.Create(outFile)
 	if err != nil {

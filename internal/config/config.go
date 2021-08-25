@@ -15,7 +15,7 @@ var (
 	LogLevel = "info" // Log level to output [fatal|error|info|debug|trace]
 	Verbose  = true   // Run in server mode
 	File     = ""     // Configuration file to load
-	TempDir  = "./tmp/output-folder" // Temporal directory
+	TempDir  = "./tmp" // Temporal directory
 	Version  = false // Print version info and exit
 
 	Log *logger.Logger // Central logger for the app

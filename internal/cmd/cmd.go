@@ -33,12 +33,13 @@ var (
 	}
 
 	filename string
+	isSplit  = false
 )
 
 // add supported cli commands/flags
 func init() {
-
-	app.Flags().StringVarP(&filename, "filename", "f", filename, "Zipped file that contains the logs.")
+	app.Flags().StringVarP(&filename, "filename", "f", filename, "Zip file that contains the logs.")
+	app.Flags().BoolVarP(&isSplit, "is-split", "s", isSplit, "If the zip file has been split")
 
 	config.AddFlags(app)
 }
@@ -84,7 +85,7 @@ func startApp(ccmd *cobra.Command, args []string) error {
 	errs := make(chan error)
 
 	go func() {
-		errs <- core.Start(filename)
+		errs <- core.Start(filename, isSplit)
 	}()
 
 	// break if any of them return an error (blocks exit)
