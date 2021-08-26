@@ -13,7 +13,7 @@ import (
 
 var (
 	LogLevel = "info" // Log level to output [fatal|error|info|debug|trace]
-	Verbose  = true   // Run in server mode
+	Verbose  = true   // Run in verbose mode
 	File     = ""     // Configuration file to load
 	TempDir  = "./tmp" // Temporal directory
 	Version  = false // Print version info and exit

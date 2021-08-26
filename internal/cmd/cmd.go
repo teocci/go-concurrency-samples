@@ -6,11 +6,11 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/teocci/go-concurrency-samples/internal/core"
-	"github.com/teocci/go-concurrency-samples/internal/dirfiles"
 
 	"github.com/spf13/cobra"
 	"github.com/teocci/go-concurrency-samples/internal/config"
+	"github.com/teocci/go-concurrency-samples/internal/core"
+	"github.com/teocci/go-concurrency-samples/internal/dirfiles"
 	"github.com/teocci/go-concurrency-samples/internal/logger"
 )
 

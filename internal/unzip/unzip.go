@@ -7,7 +7,6 @@ import (
 	"archive/zip"
 	"bufio"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
 	"io"
 	"io/fs"
 	"log"
@@ -80,12 +79,19 @@ func Extract(src string, dest string) ([]string, error) {
 
 func Merge(src, dest string) (string, []string, error) {
 	var parts []string
-	var rootPath string
-	var mergedFileName string
+	var rootPath, mergedFileName, mergedFilePath string
+	var err error
 
 	rootPath, sf := filepath.Split(src)
 	sfExt := filepath.Ext(sf)
 	sfName := strings.TrimSuffix(sf, sfExt)
+
+	if len(rootPath) == 0 {
+		rootPath, err = os.Getwd()
+		if err != nil {
+			return mergedFileName, nil, ErrCanFindPWD(err.Error())
+		}
+	}
 
 	parent := filepath.Dir(rootPath)
 
@@ -93,7 +99,7 @@ func Merge(src, dest string) (string, []string, error) {
 	fmt.Println("splitFile-name:", sf)
 	fmt.Println("parent-path:", parent)
 
-	err := filepath.WalkDir(rootPath, func(path string, d fs.DirEntry, err error) error {
+	err = filepath.WalkDir(rootPath, func(path string, d fs.DirEntry, err error) error {
 		if !d.IsDir() || path == rootPath {
 			r, err := regexp.MatchString(sfName, d.Name())
 			if err == nil && r {
@@ -111,7 +117,7 @@ func Merge(src, dest string) (string, []string, error) {
 	}
 
 	mergedFileName = sfName + mergedFilePostfix
-	mergedFilePath := filepath.Join(dest, mergedFileName)
+	mergedFilePath = filepath.Join(dest, mergedFileName)
 	_, err = os.Create(mergedFilePath)
 	if err != nil {
 		log.Fatal(err)
@@ -141,12 +147,6 @@ func Merge(src, dest string) (string, []string, error) {
 		}
 
 		fmt.Println("Processing file:", partInfo.Name())
-
-		header, err := zip.FileInfoHeader(partInfo)
-		if err != nil {
-			return mergedFileName, nil, err
-		}
-		spew.Dump(header)
 
 		// calculate the bytes size of each chunk
 		// we are not going to rely on previous data and constant
@@ -185,7 +185,7 @@ func Merge(src, dest string) (string, []string, error) {
 	// Now, close the mergedFile
 	mergedFile.Close()
 
-	return mergedFileName, parts, nil
+	return mergedFilePath, parts, nil
 }
 
 func closeZipReader() func(r *zip.ReadCloser) {

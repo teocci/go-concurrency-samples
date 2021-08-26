@@ -36,10 +36,18 @@ func main() {
 func Merge(src, dest string) ([]string, error) {
 	var parts []string
 	var rootPath string
+	var err error
 
 	rootPath, sf := filepath.Split(src)
 	sfExt := filepath.Ext(sf)
 	sfName := strings.TrimSuffix(sf, sfExt)
+
+	if len(rootPath) == 0 {
+		rootPath, err = os.Getwd()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 
 	parent := filepath.Dir(rootPath)
 
@@ -47,7 +55,7 @@ func Merge(src, dest string) ([]string, error) {
 	fmt.Println("splitFile-name:", sf)
 	fmt.Println("parent-path:", parent)
 
-	err := filepath.WalkDir(rootPath, func(path string, d fs.DirEntry, err error) error {
+	err = filepath.WalkDir(rootPath, func(path string, d fs.DirEntry, err error) error {
 		if !d.IsDir() || path == rootPath {
 			r, err := regexp.MatchString(sfName, d.Name())
 			if err == nil && r {
