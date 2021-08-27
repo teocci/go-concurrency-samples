@@ -4,60 +4,63 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
-
 	"github.com/spf13/cobra"
+	"github.com/teocci/go-concurrency-samples/internal/cmd/cmdapp"
 	"github.com/teocci/go-concurrency-samples/internal/config"
 	"github.com/teocci/go-concurrency-samples/internal/core"
-	"github.com/teocci/go-concurrency-samples/internal/dirfiles"
+	"github.com/teocci/go-concurrency-samples/internal/filemngt"
 	"github.com/teocci/go-concurrency-samples/internal/logger"
-)
-
-const (
-	version = "v1.0"
-	commit  = "420"
+	"log"
 )
 
 var (
-	// shaman provides the shaman cli/server functionality
 	app = &cobra.Command{
-		Use:               "go-concurrency-samples",
-		Short:             "Unzip a file and process the data inside",
-		Long:              `This application unzip a file containing logs and csv dirfiles that will be merged and then inserted into a database.`,
-		PersistentPreRunE: readConfig,
-		PreRunE:           preFlight,
-		RunE:              startApp,
-		SilenceErrors:     false,
-		SilenceUsage:      false,
+		Use:           cmdapp.Name,
+		Short:         cmdapp.Short,
+		Long:          cmdapp.Long,
+		PreRunE:       validate,
+		RunE:          runE,
+		SilenceErrors: false,
+		SilenceUsage:  false,
 	}
 
 	filename string
-	isSplit  = false
+	dest     string
+	merge    bool
 )
 
-// add supported cli commands/flags
+// Add supported cli commands/flags
 func init() {
-	app.Flags().StringVarP(&filename, "filename", "f", filename, "Zip file that contains the logs.")
-	app.Flags().BoolVarP(&isSplit, "is-split", "s", isSplit, "If the zip file has been split")
+	dest = cmdapp.DDefault
+	merge = cmdapp.MDefault
+
+	cobra.OnInitialize(initConfig)
+
+	app.Flags().StringVarP(&filename, cmdapp.FName, cmdapp.FShort, filename, cmdapp.FDesc)
+	app.Flags().StringVarP(&dest, cmdapp.DName, cmdapp.DShort, dest, cmdapp.DDesc)
+
+	app.Flags().BoolVarP(&merge, cmdapp.MName, cmdapp.MShort, merge, cmdapp.MDesc)
+
+	_ = app.MarkFlagRequired(cmdapp.FName)
 
 	config.AddFlags(app)
 }
 
-func readConfig(ccmd *cobra.Command, args []string) error {
+// Load config
+func initConfig() {
 	if err := config.LoadConfigFile(); err != nil {
-		fmt.Printf("sError: %v\n", err)
-		return err
+		log.Fatal(err)
 	}
 
-	return nil
+	config.LoadLogConfig()
 }
 
-func preFlight(ccmd *cobra.Command, args []string) error {
+func validate(ccmd *cobra.Command, args []string) error {
 	if config.Version {
-		fmt.Printf("go-concurrency-samples %s (%s)\n", version, commit)
+		fmt.Printf(cmdapp.VersionTemplate, cmdapp.Name, cmdapp.Version, cmdapp.Commit)
 
-		return fmt.Errorf("")
+		return nil
 	}
 
 	if !config.Verbose {
@@ -69,28 +72,27 @@ func preFlight(ccmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func startApp(ccmd *cobra.Command, args []string) error {
+func runE(ccmd *cobra.Command, args []string) error {
 	var err error
-
-	config.Log, err = logger.New(config.LogLevel, config.Verbose, false, config.File)
+	config.Log, err = logger.New(config.LogConfig)
 	if err != nil {
-		return err
+		return ErrCanNotLoadLogger(err)
 	}
 
-	if !dirfiles.Exists(filename) {
-		return errors.New(fmt.Sprintf("%s file does not exist", filename))
+	if !filemngt.FileExists(filename) {
+		return ErrFileDoesNotExist(filename)
 	}
 
 	// make channel for errors
 	errs := make(chan error)
 
 	go func() {
-		errs <- core.Start(filename, isSplit)
+		errs <- core.Start(filename, dest, merge)
 	}()
 
 	// break if any of them return an error (blocks exit)
 	if err := <-errs; err != nil {
-		config.Log.Fatal(err.Error())
+		config.Log.Fatal(err)
 	}
 
 	return err
@@ -99,6 +101,6 @@ func startApp(ccmd *cobra.Command, args []string) error {
 func Execute() {
 	err := app.Execute()
 	if err != nil {
-		return
+		log.Fatalln(err)
 	}
 }

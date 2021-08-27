@@ -61,8 +61,19 @@ type Logger struct {
 	buffers map[Destination]bytes.Buffer
 }
 
+type LogConfig struct {
+	Level   string
+	Verbose bool
+	Syslog   bool
+	LogFile  string
+}
+
 // New allocates a log handler.
-func New(level string, verbose bool, syslog bool, filePath string) (*Logger, error) {
+func New(c LogConfig) (*Logger, error) {
+	return newLogger(c.Level, c.Verbose, c.Syslog, c.LogFile)
+}
+
+func newLogger(level string, verbose bool, syslog bool, filePath string) (*Logger, error) {
 	var destinations = map[Destination]string{}
 
 	if verbose {
@@ -209,26 +220,25 @@ func GetLevelName(level Level) string {
 }
 
 func initialize(level Level, destinations map[Destination]string, filePath string) (*Logger, error) {
+	var err error
 	lh := Logger{
 		level:        level,
 		destinations: destinations,
 	}
 
 	if _, ok := destinations[DestinationFile]; ok {
-		var err error
 		lh.file, err = os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 		if err != nil {
 			lh.Close()
-			return nil, err
+			return nil, ErrCanNotOpenLogFile(filePath, err)
 		}
 	}
 
 	if _, ok := destinations[DestinationSyslog]; ok {
-		var err error
 		lh.syslog, err = NewSyslog(prefix)
 		if err != nil {
 			lh.Close()
-			return nil, err
+			return nil, ErrCanNotInitSyslog(err)
 		}
 	}
 	lh.buffers = map[Destination]bytes.Buffer{}

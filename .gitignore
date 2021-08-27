@@ -406,7 +406,7 @@ csx/
 ecf/
 rcf/
 
-# Windows Store app package directories and dirfiles
+# Windows Store cmdapp package directories and dirfiles
 AppPackages/
 BundleArtifacts/
 Package.StoreAssociation.xml

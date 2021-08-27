@@ -50,7 +50,8 @@ func newW(pri Level, src string) (io.WriteCloser, error) {
 	// ERROR_ACCESS_DENIED so that we can log without administrative permissions
 	// for pre-existing eventlog sources.
 	if err := eventlog.InstallAsEventCreate(src, eventlog.Info|eventlog.Warning|eventlog.Error); err != nil {
-		if !strings.Contains(err.Error(), "registry key already exists") && err != windows.ERROR_ACCESS_DENIED {
+		if !strings.Contains(err.Error(), "registry key already exists") &&
+			err != windows.ERROR_ACCESS_DENIED {
 			return nil, err
 		}
 	}

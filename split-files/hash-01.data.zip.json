@@ -1,0 +1,28 @@
+{
+ "hashes": [
+  {
+   "file_name": "01.data.zip.pt00",
+   "file_hash": "8f60acc6fa681ff18ee49357f255c9df0a89a1a538d20e2e7043b630eec32d06"
+  },
+  {
+   "file_name": "01.data.zip.pt01",
+   "file_hash": "5efca54b65ff6c8cf07796e423332fc785cbf60d99853438623e958a596e57c3"
+  },
+  {
+   "file_name": "01.data.zip.pt02",
+   "file_hash": "89acc32229f11e106412022f531dff31e1761332f365b98b5df5bc2260b8b37c"
+  },
+  {
+   "file_name": "01.data.zip.pt03",
+   "file_hash": "05d14e8f8af51d0c13fc73f39e5f278093253e3356e46ada76e4debb1eed905b"
+  },
+  {
+   "file_name": "01.data.zip.pt04",
+   "file_hash": "3a3518387b8484bbc46aa1867b3474f48efef339ccd94fe095e7ca9955b7b958"
+  },
+  {
+   "file_name": "01.data.zip",
+   "file_hash": "d3a2b8d6b57ac0408f2efd1305518fad1aaf40cbb87e00e61ae10ae3f8ba4505"
+  }
+ ]
+}

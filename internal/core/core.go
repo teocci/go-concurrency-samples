@@ -7,11 +7,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
-	"github.com/teocci/go-concurrency-samples/internal/config"
-	"github.com/teocci/go-concurrency-samples/internal/dirfiles"
-	"github.com/teocci/go-concurrency-samples/internal/logger"
-	"github.com/teocci/go-concurrency-samples/internal/unzip"
 	"io/fs"
 	"log"
 	"os"
@@ -19,6 +14,12 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/davecgh/go-spew/spew"
+	"github.com/teocci/go-concurrency-samples/internal/config"
+	"github.com/teocci/go-concurrency-samples/internal/filemngt"
+	"github.com/teocci/go-concurrency-samples/internal/logger"
+	"github.com/teocci/go-concurrency-samples/internal/unzip"
 )
 
 const (
@@ -49,19 +50,25 @@ type FlightLog struct {
 
 var flightLogs map[string]*FlightLog
 
-func Start(f string, isSplit bool) error {
+func Start(f string, d string, merge bool) error {
 	var err error
+	var dPath string
+
+	if len(d) == 0 {
+		dPath = config.TempDir
+	}
+
 	var fName = f
 
-	if isSplit {
+	if merge {
 		fName, _, err = unzip.Merge(f, config.TempDir)
 		if err != nil {
 			return err
 		}
 	}
 
-	dest := filepath.Join(config.TempDir, droneName)
-	files, err := unzip.Extract(fName, dest)
+	dPath = filepath.Join(config.TempDir, droneName)
+	files, err := unzip.Extract(fName, dPath)
 	if err != nil {
 		return err
 	}
@@ -128,7 +135,7 @@ func process(path string, f fs.DirEntry, e error) error {
 				num = int(n)
 			}
 
-			t, err := dirfiles.Hash(id + droneName)
+			t, err := filemngt.Hash(id + droneName)
 			if err != nil {
 				return err
 			}
