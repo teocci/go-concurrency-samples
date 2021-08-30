@@ -12,7 +12,7 @@ const (
 	errSessionIndexNotFound     = "session index not found"
 	errSessionIndexNotNumerical = "session index not numerical"
 	errUnableToOpenCSVFile      = "unable to open %s file: %s"
-	errUnableToCreateCSVFile      = "unable to create new file: %s"
+	errUnableToCreateCSVFile      = "unable to create new file: %s -> %s"
 )
 
 func ErrorSessionIndexNotFound() error {
@@ -23,10 +23,10 @@ func ErrorSessionIndexNotNumerical() error {
 	return errors.New(errSessionIndexNotNumerical)
 }
 
-func ErrorUnableToOpenCSVFile(name, err string) error {
-	return errors.New(fmt.Sprintf(errUnableToOpenCSVFile, name, err))
+func ErrorUnableToOpenCSVFile(f, e string) error {
+	return errors.New(fmt.Sprintf(errUnableToOpenCSVFile, f, e))
 }
 
-func ErrorUnableToCreateCSVFile(err string) error {
-	return errors.New(fmt.Sprintf(errUnableToCreateCSVFile, err))
+func ErrorUnableToCreateCSVFile(f, e string) error {
+	return errors.New(fmt.Sprintf(errUnableToCreateCSVFile, f, e))
 }

@@ -15,7 +15,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/teocci/go-concurrency-samples/internal/config"
 	"github.com/teocci/go-concurrency-samples/internal/filemngt"
 	"github.com/teocci/go-concurrency-samples/internal/logger"
@@ -85,14 +84,14 @@ func Start(f string, d string, merge bool) error {
 		return err
 	}
 
-	spew.Dump(flightLogs)
+	//spew.Dump(flightLogs)
 
 	for _, fl := range flightLogs {
 		//processCSVFiles(fl)
 		initCSVProcess(fl)
 	}
 
-	spew.Dump(flightLogs)
+	//spew.Dump(flightLogs)
 
 	return nil
 }

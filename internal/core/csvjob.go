@@ -4,19 +4,18 @@
 package core
 
 import (
-	"encoding/csv"
+	"bytes"
 	"fmt"
-	"io"
+	"github.com/gocarina/gocsv"
+	"github.com/teocci/go-concurrency-samples/internal/config"
+	"github.com/teocci/go-concurrency-samples/internal/data"
 	"log"
+	"math"
 	"os"
 	"path/filepath"
 	"sync"
-
-	"github.com/jszwec/csvutil"
-	"github.com/teocci/go-concurrency-samples/internal/config"
+	"time"
 )
-
-const largeCSVFile = "../1000k.csv"
 
 var (
 	// list of channels to communicate with workers
@@ -35,124 +34,138 @@ func initCSVProcess(fl *FlightLog) {
 	defer waitTilEnd()()
 
 	// open the first file
-	base, err := os.Open(fl.Files["GEOdata"])
-	if err != nil {
-		config.Log.Errorln(ErrorUnableToOpenCSVFile("GEOdata", err.Error()))
-	}
-	defer closeFile()(base)
-
-	// open second file
-	fcc, err := os.Open(fl.Files["FCC"])
-	if err != nil {
-		config.Log.Errorln(ErrorUnableToOpenCSVFile("FCC", err.Error()))
-	}
-	defer closeFile()(fcc)
-
-	// create a file writer
-	rttFile := fl.LogID + "_RTTdata"
-	fmt.Println("rttFile:", rttFile)
-	outFile := filepath.Join(fl.LoggerDir, rttFile+".csv")
-
-	w, err := os.Create(outFile)
-	if err != nil {
-		config.Log.Errorln(ErrorUnableToCreateCSVFile(err.Error()))
-	}
-	defer closeFile()(w)
-
-	fl.Files[rttFile] = outFile
-
-	// wrap the file readers with CSV readers
-	bReader := csv.NewReader(base)
-	//fr := csv.NewReader(fcc)
-
-	geoDataSlice := make([]*GEOData, 0)
-	//fccSlice := make([]*FCC, 0)
-
-	// wrap the out file writer with a CSV writer
-	//cw := csv.NewWriter(w)
-	//sessionDataSlice := make([]*FSessionData, 0)
-
-	dec, err := csvutil.NewDecoder(bReader)
-	if err != nil {
+	var geos []data.GEOData
+	geoBuff := loadFileBuff(fl.Files[data.GEOFile])
+	if err := gocsv.UnmarshalBytes(geoBuff, &geos); err != nil {
 		log.Fatal(err)
 	}
 
-	bHeader := dec.Header()
-	fmt.Println(bHeader)
+	// open second file
+	var fccs []data.FCC
+	fccBuff := loadFileBuff(fl.Files[data.FCCFile])
+	if err := gocsv.UnmarshalBytes(fccBuff, &fccs); err != nil {
+		log.Fatal(err)
+	}
 
-	numWps := 100
-	jobs := make(chan *GEOData, numWps)
-	res := make(chan *GEOData)
+	// create a file writer
+	var rtts []*data.RTT
+	rttFN := fl.LogID + "_RTTdata"
+	fmt.Println("rttFN:", rttFN)
+	rttPath := filepath.Join(fl.LoggerDir, rttFN+".csv")
+	w := createFile(rttPath)
+	defer closeFile()(w)
+	_ = rtts
 
-	worker := func(jobs <-chan *GEOData, results chan<- *GEOData) {
-		for {
-			select {
-			case job, ok := <-jobs: // you must check for readable state of the channel.
-				if !ok {
-					return
+	fl.Files[rttFN] = rttPath
+
+	for _, geo := range geos {
+		var last int
+		var rtt *data.RTT
+		for j := last; j < len(fccs); j++ {
+			if geo.FCCTime == fccs[j].FCCTime {
+				fcc := fccs[j]
+				last = j
+				rtt = &data.RTT{
+					DroneID:         1,
+					FlightSessionID: 1,
+					Lat:             geo.Lat,
+					Long:            geo.Long,
+					Alt:             geo.Alt,
+					Roll:            geo.Roll,
+					Pitch:           geo.Pitch,
+					Yaw:             geo.Yaw,
+					BatVoltage:      fcc.BatVoltage,
+					BatCurrent:      fcc.BatCurrent,
+					BatPercent:      fcc.BatPercent,
+					BatTemperature:  fcc.BatTemperature,
+					Temperature:     fcc.Temperature,
+					GPSTime:         fcc.GPSTime,
 				}
 
-				results <- job
+				rtts = append(rtts, rtt)
 			}
 		}
 	}
 
-	// init workers
-	for w := 0; w < numWps; w++ {
-		wg.Add(1)
-		go func() {
-			// this line will exec when chan `res` processed output at line 107 (func worker: line 71)
-			defer wg.Done()
-			worker(jobs, res)
-		}()
+
+
+	for i := 0; i < 5; i++ {
+		sec, dec := math.Modf(float64(rtts[i].GPSTime))
+		t := time.Unix(int64(sec), int64(dec*(1e3)))
+
+		fmt.Printf("FCCTime: %+v\n", t)
 	}
+	fmt.Println("Count Concurrent ", len(rtts))
 
-	go func() {
-		for {
-			geoData := new(GEOData)
-			if err := dec.Decode(&geoData); err == io.EOF {
-				break
-			} else if err != nil {
-				log.Fatal(err)
-			}
-			jobs <- geoData
-
-			//rec, err := bReader.Read()
-			//if err == io.EOF {
-			//	break
-			//}
-			//if err != nil {
-			//	fmt.Println("ERROR: ", err.Error())
-			//	break
-			//}
-			//jobs <- rec
-		}
-		close(jobs) // close jobs to signal workers that no more job are incoming.
-	}()
-
-	go func() {
-		wg.Wait()
-		close(res) // when you close(res) it breaks the below loop.
-	}()
-
-	for r := range res {
-		geoDataSlice = append(geoDataSlice, r)
-	}
-
-	fmt.Println("Count Concurrent ", len(geoDataSlice))
-
-	//for {
-	//	rec, err := bReader.Read()
-	//	if err != nil {
-	//		if err == io.EOF {
-	//			savePartitions()
-	//			return
-	//		}
-	//		log.Fatal(err) // sorry for the panic
-	//	}
-	//	processCSV(rec, true)
-	//}
 }
+
+func findFCCData(geo data.GEOData, fccs []data.FCC, offset int, rtt *data.RTT) int {
+	for i := offset; i < len(fccs); i++ {
+		if geo.FCCTime == fccs[i].FCCTime {
+			fcc := fccs[i]
+			rtt = &data.RTT{
+				DroneID:         1,
+				FlightSessionID: 1,
+				Lat:             geo.Lat,
+				Long:            geo.Long,
+				Alt:             geo.Alt,
+				Roll:            geo.Roll,
+				Pitch:           geo.Pitch,
+				Yaw:             geo.Yaw,
+				BatVoltage:      fcc.BatVoltage,
+				BatCurrent:      fcc.BatCurrent,
+				BatPercent:      fcc.BatPercent,
+				BatTemperature:  fcc.BatTemperature,
+				Temperature:     fcc.Temperature,
+				GPSTime:         fcc.GPSTime,
+			}
+
+			return i
+		}
+	}
+
+	return -1
+}
+
+//func mergeData(geos []data.GEOData, fccs []data.FCC) {
+//	for _, geo := range geos {
+//		var last int
+//		var rtt *data.RTT
+//		for j := last; j < len(fccs); j++ {
+//			if geo.FCCTime == fccs[j].FCCTime {
+//				fcc := fccs[j]
+//				last = j
+//				rtt = &data.RTT{
+//					DroneID:         1,
+//					FlightSessionID: 1,
+//					Lat:             geo.Lat,
+//					Long:            geo.Long,
+//					Alt:             geo.Alt,
+//					Roll:            geo.Roll,
+//					Pitch:           geo.Pitch,
+//					Yaw:             geo.Yaw,
+//					BatVoltage:      fcc.BatVoltage,
+//					BatCurrent:      fcc.BatCurrent,
+//					BatPercent:      fcc.BatPercent,
+//					BatTemperature:  fcc.BatTemperature,
+//					Temperature:     fcc.Temperature,
+//					GPSTime:         fcc.GPSTime,
+//				}
+//
+//				jobs <- geoData
+//
+//				//rtts = append(rtts, rtt)
+//				//
+//				//for i := 0; i < 5; i++ {
+//				//	sec, dec := math.Modf(float64(rtts[i].GPSTime))
+//				//	t := time.Unix(int64(sec), int64(dec*(1e3)))
+//				//
+//				//	fmt.Printf("FCCTime: %+v\n", t)
+//				//}
+//			}
+//		}
+//	}
+//}
 
 func processCSV(rec []string, first bool) {
 	l := len(rec)
@@ -232,4 +245,28 @@ func closeFile() func(f *os.File) {
 			log.Fatal(err)
 		}
 	}
+}
+
+func loadFileBuff(f string) []byte {
+	file, err := os.Open(f)
+	if err != nil {
+		config.Log.Errorln(ErrorUnableToOpenCSVFile(f, err.Error()))
+	}
+	defer closeFile()(file)
+
+	buf := new(bytes.Buffer)
+	if _, err = buf.ReadFrom(file); err != nil {
+		panic(err)
+	}
+
+	return buf.Bytes()
+}
+
+func createFile(f string) *os.File {
+	w, err := os.Create(f)
+	if err != nil {
+		config.Log.Errorln(ErrorUnableToCreateCSVFile(f, err.Error()))
+	}
+
+	return w
 }
