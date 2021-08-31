@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/teocci/go-concurrency-samples/internal/model"
 	"io/fs"
 	"log"
 	"os"
@@ -15,6 +16,7 @@ import (
 	"strconv"
 	"strings"
 
+	gopg "github.com/go-pg/pg/v10"
 	"github.com/teocci/go-concurrency-samples/internal/config"
 	"github.com/teocci/go-concurrency-samples/internal/filemngt"
 	"github.com/teocci/go-concurrency-samples/internal/logger"
@@ -24,7 +26,10 @@ import (
 const (
 	regexSessionNum = `(?P<id>^[0-9]+)(?P<postfix>st.logger$)`
 	droneName       = "drone-01"
+	droneID         = 1
 )
+
+var db *gopg.DB
 
 // Core is an instance of rtsp-simple-server.
 type Core struct {
@@ -39,6 +44,8 @@ type Core struct {
 }
 
 type FlightLog struct {
+	DroneID      int
+	DroneName    string
 	SessionToken string
 	LogID        string
 	LogNum       int
@@ -47,7 +54,7 @@ type FlightLog struct {
 	Files        map[string]string
 }
 
-var flightLogs map[string]*FlightLog
+var fLogs map[string]*FlightLog
 
 func Start(f string, d string, merge bool) error {
 	var err error
@@ -77,27 +84,32 @@ func Start(f string, d string, merge bool) error {
 		fmt.Println("----------")
 	}
 
-	flightLogs = map[string]*FlightLog{}
+	fLogs = map[string]*FlightLog{}
 
-	err = filepath.WalkDir(config.TempDir, process)
+	err = filepath.WalkDir(config.TempDir, loadLogPaths)
 	if err != nil {
 		return err
 	}
 
-	//spew.Dump(flightLogs)
+	// init db
+	db = model.Setup()
+	defer db.Close()
 
-	for _, fl := range flightLogs {
+	//spew.Dump(fLogs)
+
+	for _, fl := range fLogs {
 		//processCSVFiles(fl)
-		initCSVProcess(fl)
+		//initCSVProcess(fl)
+		processCSVLogs(fl)
 	}
 
-	//spew.Dump(flightLogs)
+	//spew.Dump(fLogs)
 
 	return nil
 }
 
-// process check if is a logger directory and call a job to process its logs.
-func process(path string, f fs.DirEntry, e error) error {
+// loadLogPaths checks the dir tree and load log paths for each session
+func loadLogPaths(path string, f fs.DirEntry, e error) error {
 	if e != nil {
 		return e
 	}
@@ -142,10 +154,12 @@ func process(path string, f fs.DirEntry, e error) error {
 			token := strconv.Itoa(int(t))
 			//println("sessionToken:", token)
 
-			if _, ok := flightLogs[token]; ok {
-				flightLogs[token].Files[f] = path
+			if _, ok := fLogs[token]; ok {
+				fLogs[token].Files[f] = path
 			} else {
 				var fl = new(FlightLog)
+				fl.DroneID = droneID
+				fl.DroneName = droneName
 				fl.SessionToken = token
 				fl.LogID = id
 				fl.LogNum = num
@@ -154,7 +168,7 @@ func process(path string, f fs.DirEntry, e error) error {
 				fl.setSessionDirIfEmpty(base)
 				fl.setLoggerDirIfEmpty(parent)
 
-				flightLogs[token] = fl
+				fLogs[token] = fl
 			}
 
 			//fmt.Println("----------")

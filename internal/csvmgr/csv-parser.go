@@ -25,7 +25,7 @@ func Merge(geos []data.GEOData, fccs []data.FCC, rtts []*data.RTT) {
 					return
 				}
 
-				results <- data.ParseGEOData(job)
+				results <- &job
 			}
 		}
 	}
