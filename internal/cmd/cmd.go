@@ -5,13 +5,14 @@ package cmd
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/spf13/cobra"
 	"github.com/teocci/go-concurrency-samples/internal/cmd/cmdapp"
 	"github.com/teocci/go-concurrency-samples/internal/config"
 	"github.com/teocci/go-concurrency-samples/internal/core"
 	"github.com/teocci/go-concurrency-samples/internal/filemngt"
 	"github.com/teocci/go-concurrency-samples/internal/logger"
-	"log"
 )
 
 var (
@@ -22,7 +23,7 @@ var (
 		PreRunE:       validate,
 		RunE:          runE,
 		SilenceErrors: false,
-		SilenceUsage:  false,
+		SilenceUsage:  true,
 	}
 
 	filename string
