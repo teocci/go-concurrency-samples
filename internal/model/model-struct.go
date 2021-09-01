@@ -18,6 +18,7 @@ type FlightSessionReading struct {
 	ID              int       `json:"id" csv:"id" pg:"id,pk,unique"`
 	DroneID         int       `json:"drone_id" csv:"drone_id" pg:"drone_id"`
 	FlightSessionID int       `json:"flight_session_id" pg:"flight_session_id" pg:"flight_session_id"`
+	Sequence        int       `json:"sequence" csv:"seq" pg:"sequence"`
 	Latitude        float32   `json:"latitude" csv:"lat" pg:"latitude"`
 	Longitude       float32   `json:"longitude" csv:"long" pg:"longitude"`
 	Altitude        float32   `json:"altitude" csv:"alt" pg:"altitude"`

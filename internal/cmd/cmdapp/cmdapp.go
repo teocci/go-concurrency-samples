@@ -20,7 +20,7 @@ const (
 	MName    = "merge"
 	MShort   = "m"
 	MDesc    = "If the zip file has been split"
-	MDefault = true
+	MDefault = false
 )
 
 const (

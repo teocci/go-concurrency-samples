@@ -4,7 +4,9 @@
 package filemngt
 
 import (
+	"errors"
 	"hash/fnv"
+	"io/ioutil"
 	"os"
 )
 
@@ -23,9 +25,35 @@ func DirExists(p string) bool {
 	if stat, err := os.Stat(p); err == nil {
 		return stat.IsDir()
 	}
+
 	return false
 }
 
+func FileNotExist(p string) bool {
+	// Check if file already exists
+	f, err := os.Open(p)
+	_ = f.Close()
+
+	return errors.Is(err, os.ErrNotExist)
+}
+
+func IsPathValid(p string) bool {
+	// Check if file already exists
+	f, err := os.Open(p)
+	if err == nil {
+		return true
+	} else if errors.Is(err, os.ErrNotExist) {
+		// Attempt to create it
+		var d []byte
+		if err := ioutil.WriteFile(p, d, 0644); err == nil {
+			_ = os.Remove(p) // And delete it
+			return true
+		}
+	}
+	_ = f.Close()
+
+	return false
+}
 
 // MakeDirIfNotExist if the path does not exist call os.Mkdir
 // to create a new directory
@@ -38,7 +66,7 @@ func MakeDirIfNotExist(d string) error {
 		}
 	}
 
-	return err
+	return ErrCanNotMakeDir(d, err.Error())
 }
 
 // MakeDir call os.Mkdir to create a new directory
@@ -59,7 +87,6 @@ func MakeDir(d string) error {
 		if !stat.IsDir() {
 			return ErrPathExistIsNotDirectory(d)
 		}
-
 		return nil
 	}
 

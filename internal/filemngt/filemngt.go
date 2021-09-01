@@ -5,7 +5,6 @@ package filemngt
 
 import (
 	"errors"
-	"io/ioutil"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -36,22 +35,6 @@ const (
 	UndefinedEModeTag = "undefined"
 )
 
-func IsPathValid(p string) bool {
-	// Check if file already exists
-	if _, err := os.Stat(p); err == nil {
-		return true
-	}
-
-	// Attempt to create it
-	var d []byte
-	if err := ioutil.WriteFile(p, d, 0644); err == nil {
-		os.Remove(p) // And delete it
-		return true
-	}
-
-	return false
-}
-
 func StartWithTilde(s string) bool {
 	return len(s) > 0 && s[0] == tildeChar
 }
@@ -76,10 +59,22 @@ func IsPathSeparator(s string) bool {
 	return len(s) == 1 && os.IsPathSeparator(s[0])
 }
 
+func PWD() string {
+	if d, err := os.Getwd(); err != nil {
+		return emptyString
+	} else {
+		return d
+	}
+}
+
 func DirExtractPathE(dir string) (string, error) {
 	return dirExtractPathE(dir, NativeEMode)
 }
 
+// dirExtractPathE expands the path to include the home directory.
+// If is the path contains an extension will return a ErrPathIsNotDirectory
+// error.
+// This function also return errors encounter while extracting the path.
 func dirExtractPathE(dir string, mode ExtractMode) (string, error) {
 	if len(dir) == 0 {
 		return emptyString, nil
@@ -89,15 +84,11 @@ func dirExtractPathE(dir string, mode ExtractMode) (string, error) {
 		if path, err := expandByModeE(dir, mode); err == nil {
 			return path, nil
 		} else {
-			return emptyString, err
+			return emptyString, ErrCanNotExpandPath(path, err.Error())
 		}
 	}
 
-	if stat, err := os.Stat(dir); err == nil {
-		if !stat.IsDir() {
-			return emptyString, ErrPathExistIsNotDirectory(dir)
-		}
-
+	if IsDot(dir) {
 		return dir, nil
 	}
 

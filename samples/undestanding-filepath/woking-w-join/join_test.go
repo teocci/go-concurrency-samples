@@ -40,13 +40,13 @@ func TestFilepathJoin(t *testing.T) {
 		},
 
 		{
-			"./split-files",
+			"./split-test-files",
 			"~/foo",
 		},
 
 		{
 			"~/foo",
-			"./split-files",
+			"./split-test-files",
 		},
 
 

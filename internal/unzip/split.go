@@ -25,7 +25,7 @@ const (
 
 // Split method splits the files into part files of user defined lengths
 func Split(filename string, dest string, size int) error {
-	if filemngt.IsPathValid(filename) {
+	if filemngt.FileExists(filename) {
 		var err error
 		bufferSize := int64(units.KiB)           // 1 KB for optimal splitting
 		partSize := int64(size * int(units.MiB)) // Size in MiB
@@ -36,6 +36,10 @@ func Split(filename string, dest string, size int) error {
 		}
 		fileStats, _ := os.Stat(filePath)
 		basePath, fn := filepath.Split(filename)
+		if len(basePath) == 0 {
+			basePath = filemngt.PWD()
+		}
+		fmt.Println("basePath:", basePath)
 
 		workPath, err := findWorkPath(basePath, dest)
 		if err != nil {
@@ -103,15 +107,18 @@ func findWorkPath(path string, dest string) (string, error) {
 	if len(dest) == 0 {
 		fmt.Println("Make working dir:", tmpSplitDir)
 		destPath = filepath.Join(path, tmpSplitDir)
-		err = filemngt.MakeDirIfNotExist(destPath)
-		if err != nil {
-			return emptyString, filemngt.ErrCanNotMakeDir(destPath, err.Error())
+		if err = filemngt.MakeDirIfNotExist(destPath); err != nil {
+			return emptyString, err
 		}
 	} else {
-		destPath, err = filemngt.FilePathE(path)
+		destPath, err = filemngt.DirExtractPathE(dest)
 		if err != nil {
-			return emptyString, filemngt.ErrCanNotExpandPath(path, err.Error())
+			return emptyString, err
 		}
+		if len(destPath) == 0 {
+			destPath = path
+		}
+		fmt.Println("destPath:", destPath)
 	}
 
 	return destPath, nil

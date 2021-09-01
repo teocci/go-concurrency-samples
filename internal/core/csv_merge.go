@@ -19,7 +19,11 @@ import (
 )
 
 var (
-	baseFSTime, baseFCCTime time.Time
+	baseFSTime  time.Time
+	baseFCCTime time.Time
+
+	inserts int
+	total   int
 )
 
 func processCSVLogs(fl *FlightLog) {
@@ -59,15 +63,25 @@ func processCSVLogs(fl *FlightLog) {
 		LastUpdate: baseFSTime,
 	}
 
-	res, err := db.Model(fs).OnConflict("DO NOTHING").Insert()
-	if err != nil {
-		panic(err)
-	}
-	if res.RowsAffected() > 0 {
-		fmt.Println("FlightSession inserted")
-	}
+	fs.InsertIntoDB(db)
 
 	Merge(geos, fccs, &rtts)
+	CrunchRTTData(rtts)
+}
+
+func CrunchRTTData(rtts []data.RTT) {
+	inserts = 0
+	data.SortRTTByFCCTime(rtts)
+
+	for i, r := range rtts {
+		if parseNInsertIntoDB(i, r) {
+			inserts++
+		}
+	}
+
+	total += inserts
+
+	fmt.Printf("CSV Recs: %d | DB Inserts: %d | Total Inserts: %d\n", len(rtts), inserts, total)
 }
 
 func Merge(geos []data.GEOData, fccs []data.FCC, rtts *[]data.RTT) {
@@ -83,32 +97,6 @@ func Merge(geos []data.GEOData, fccs []data.FCC, rtts *[]data.RTT) {
 				if !ok {
 					return
 				}
-				currFCCTime := timemgr.UnixTime(job.FCCTime)
-				lastUpdate := baseFSTime.Add(currFCCTime.Sub(baseFCCTime))
-
-				fsr := &model.FlightSessionReading{
-					DroneID:         1,
-					FlightSessionID: 1,
-					Latitude:        job.Lat,
-					Longitude:       job.Long,
-					Altitude:        job.Alt,
-					Roll:            job.Roll,
-					Pitch:           job.Pitch,
-					Yaw:             job.Yaw,
-					BatVoltage:      job.BatVoltage,
-					BatCurrent:      job.BatCurrent,
-					BatPercent:      job.BatPercent,
-					BatTemperature:  job.BatTemperature,
-					Temperature:     job.Temperature,
-					LastUpdate:      lastUpdate,
-				}
-				_, err := db.Model(fsr).OnConflict("DO NOTHING").Insert()
-				if err != nil {
-					panic(err)
-				}
-				//if res.RowsAffected() > 0 {
-				//	fmt.Println("FlightSession inserted")
-				//}
 
 				results <- job
 			}
@@ -130,8 +118,9 @@ func Merge(geos []data.GEOData, fccs []data.FCC, rtts *[]data.RTT) {
 			var rtt *data.RTT
 			var last int
 			last, rtt = findFCCData(geo, fccs, last)
-
-			jobs <- *rtt
+			if rtt != nil {
+				jobs <- *rtt
+			}
 		}
 		close(jobs) // close jobs to signal workers that no more job are incoming.
 	}()
@@ -144,14 +133,35 @@ func Merge(geos []data.GEOData, fccs []data.FCC, rtts *[]data.RTT) {
 	for r := range res {
 		*rtts = append(*rtts, r)
 	}
+}
 
-	for i, rec := range *rtts {
-		if i < 5 {
-			fmt.Printf("%#v\n", rec)
-		}
+func parseNInsertIntoDB(seq int, rtt data.RTT) bool {
+	currFCCTime := timemgr.UnixTime(rtt.FCCTime)
+	lastUpdate := baseFSTime.Add(currFCCTime.Sub(baseFCCTime))
+
+	fsr := &model.FlightSessionReading{
+		DroneID:         1,
+		FlightSessionID: 1,
+		Sequence:        seq,
+		Latitude:        rtt.Lat,
+		Longitude:       rtt.Long,
+		Altitude:        rtt.Alt,
+		Roll:            rtt.Roll,
+		Pitch:           rtt.Pitch,
+		Yaw:             rtt.Yaw,
+		BatVoltage:      rtt.BatVoltage,
+		BatCurrent:      rtt.BatCurrent,
+		BatPercent:      rtt.BatPercent,
+		BatTemperature:  rtt.BatTemperature,
+		Temperature:     rtt.Temperature,
+		LastUpdate:      lastUpdate,
 	}
 
-	fmt.Println("Count Concurrent ", len(*rtts))
+	if seq < 5 {
+		fmt.Printf("[%d]->%#v\n", seq, fsr)
+	}
+
+	return fsr.InsertIntoDB(db)
 }
 
 func findFCCData(geo data.GEOData, fccs []data.FCC, offset int) (int, *data.RTT) {
@@ -179,5 +189,5 @@ func findFCCData(geo data.GEOData, fccs []data.FCC, offset int) (int, *data.RTT)
 		}
 	}
 
-	return -1, nil
+	return 0, nil
 }

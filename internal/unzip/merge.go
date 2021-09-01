@@ -17,6 +17,7 @@ import (
 )
 
 const (
+	tmpMergeDir       = "./merge"
 	emptyString       = ""
 	joinFilePrefix    = "merged-"
 	regExFirstElement = "^"
@@ -28,26 +29,25 @@ func Merge(src, dest string) (string, []string, error) {
 	var srcFFN, mergedFN string
 	var err error
 
-	if filemngt.IsPathValid(src) {
+	if filemngt.FileExists(src) {
 		basePath, srcFFN = filepath.Split(src)
 		srcExt := filepath.Ext(srcFFN)
 		srcFN := strings.TrimSuffix(srcFFN, srcExt)
 
 		if len(basePath) == 0 {
-			basePath, err = os.Getwd()
-			if err != nil {
-				return emptyString, nil, filemngt.ErrCanNotFindPWD(basePath, err.Error())
-			}
+			basePath = filemngt.PWD()
 		}
-
 		fmt.Println("basePath:", basePath)
-
-		parent := filepath.Dir(basePath)
-		fmt.Println("parent:", parent)
+		//parent := filepath.Dir(basePath)
+		//fmt.Println("parent:", parent)
 
 		destPath, _ = filemngt.DirExtractPathE(dest)
 		if len(destPath) == 0 {
-			destPath = filepath.Join(parent, dest)
+			fmt.Println("Make working dir:", tmpMergeDir)
+			destPath = filepath.Join(basePath, tmpMergeDir)
+			if err = filemngt.MakeDirIfNotExist(destPath); err != nil {
+				return emptyString, nil, err
+			}
 		}
 		fmt.Println("destPath:", destPath)
 
@@ -87,12 +87,11 @@ func Merge(src, dest string) (string, []string, error) {
 		// Just information on which part of the new mergedFile we are appending
 		var writePosition int64 = 0
 		for i, part := range parts {
-			partPath := filepath.Join(parent, part)
+			partPath := filepath.Join(basePath, part)
 			partFile, err := os.Open(partPath)
 			if err != nil {
-				return emptyString, nil, filemngt.ErrCanNotOpenFile(partPath, err.Error())
+				return emptyString, nil, err
 			}
-			defer partFile.Close()
 
 			partInfo, err := partFile.Stat()
 			if err != nil {
@@ -133,6 +132,8 @@ func Merge(src, dest string) (string, []string, error) {
 
 			fmt.Println("Written ", n, " bytes")
 			fmt.Println("Recombining part [", i, "] into : ", mergedFN)
+
+			partFile.Close()
 		}
 
 		// Now, close the mergedFile

@@ -25,12 +25,12 @@ func TestExits(t *testing.T) {
 
 		{
 			"..",
-			true,
+			false,
 		},
 
 		{
 			"~/.android",
-			true,
+			false,
 		},
 	}
 
