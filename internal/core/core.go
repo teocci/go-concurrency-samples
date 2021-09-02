@@ -23,6 +23,15 @@ import (
 	"github.com/teocci/go-concurrency-samples/internal/unzip"
 )
 
+type ExecutionMode int
+
+// Execution Modes.
+const (
+	EMNormal ExecutionMode = iota
+	EMExtract
+	EMMerge
+)
+
 const (
 	regexSessionNum = `(?P<id>^[0-9]+)(?P<postfix>st.logger$)`
 	droneName       = "drone-01"
@@ -45,40 +54,50 @@ type Core struct {
 
 var fLogs map[string]*FlightLog
 
-func Start(f string, d string, merge bool) error {
+func Start(f string, d string, mode ExecutionMode) error {
 	var err error
 	var dPath string
 
-	if len(d) == 0 {
+	dPath = d
+	if len(dPath) == 0 {
+		if mode == EMNormal {
+			dPath = filepath.Dir(f)
+		}
 		dPath = config.TempDir
 	}
 
-	var fName = f
+	var fp = f
 
-	if merge {
-		fName, _, err = unzip.Merge(f, config.TempDir)
+	if mode == EMMerge {
+		fmt.Println("Merging files:")
+		fp, _, err = unzip.Merge(f, dPath)
+		fmt.Println("----------")
 		if err != nil {
 			return err
 		}
 	}
 
-	dPath = filepath.Join(config.TempDir, droneName)
-	files, err := unzip.Extract(fName, dPath)
-	if err != nil {
-		return err
-	}
-
-	if config.Verbose {
-		fmt.Println("Unzipped files and dirs:\n" + strings.Join(files, "\n"))
-		fmt.Println("----------")
+	if mode > EMNormal {
+		fmt.Println("Unzipping files:")
+		dPath = filepath.Join(dPath, droneName)
+		files, err := unzip.Extract(fp, dPath)
+		if err != nil {
+			return err
+		}
+		if config.Verbose {
+			fmt.Println("Unzipped dirs and files:\n", strings.Join(files, "\n"))
+			fmt.Println("----------")
+		}
 	}
 
 	fLogs = map[string]*FlightLog{}
 
-	err = filepath.WalkDir(config.TempDir, loadLogPaths)
+	fmt.Println("Loading log files:")
+	err = filepath.WalkDir(dPath, loadLogPaths)
 	if err != nil {
 		return err
 	}
+	fmt.Println("----------")
 
 	// init db
 	db = model.Setup()
@@ -86,11 +105,13 @@ func Start(f string, d string, merge bool) error {
 
 	//spew.Dump(fLogs)
 
+	fmt.Println("Process log files:")
 	for _, fl := range fLogs {
 		//processCSVFiles(fl)
 		//initCSVProcess(fl)
 		processCSVLogs(fl)
 	}
+	fmt.Println("----------")
 
 	//spew.Dump(fLogs)
 

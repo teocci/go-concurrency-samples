@@ -5,21 +5,26 @@ package cmdapp
 
 const (
 	Name  = "go-concurrency-samples"
-	Short = "Unzip a file and process the data inside"
+	Short = "Unzips a file or walks a directory and process the data inside"
 	Long  = `This application unzip a file containing logs and csv files that will be merged and then inserted into a database.`
 
 	FName  = "filename"
 	FShort = "f"
-	FDesc  = "Zip file that contains the logs"
+	FDesc  = "Zip file or directory that contains the logs"
 
 	DName  = "destination"
 	DShort = "d"
 	DDesc  = "Directory where the merged file will be stored"
 	DDefault = ""
 
+	EName    = "extract"
+	EShort   = "e"
+	EDesc    = "Extracts logs if they have been zipped"
+	EDefault = false
+
 	MName    = "merge"
 	MShort   = "m"
-	MDesc    = "If the zip file has been split"
+	MDesc    = "Merges part files if the zip file has been split"
 	MDefault = false
 )
 

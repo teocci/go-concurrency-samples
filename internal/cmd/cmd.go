@@ -28,12 +28,14 @@ var (
 
 	filename string
 	dest     string
+	extract  bool
 	merge    bool
 )
 
 // Add supported cli commands/flags
 func init() {
 	dest = cmdapp.DDefault
+	extract = cmdapp.EDefault
 	merge = cmdapp.MDefault
 
 	cobra.OnInitialize(initConfig)
@@ -41,6 +43,7 @@ func init() {
 	app.Flags().StringVarP(&filename, cmdapp.FName, cmdapp.FShort, filename, cmdapp.FDesc)
 	app.Flags().StringVarP(&dest, cmdapp.DName, cmdapp.DShort, dest, cmdapp.DDesc)
 
+	app.Flags().BoolVarP(&extract, cmdapp.EName, cmdapp.EShort, extract, cmdapp.EDesc)
 	app.Flags().BoolVarP(&merge, cmdapp.MName, cmdapp.MShort, merge, cmdapp.MDesc)
 
 	_ = app.MarkFlagRequired(cmdapp.FName)
@@ -80,15 +83,24 @@ func runE(ccmd *cobra.Command, args []string) error {
 		return ErrCanNotLoadLogger(err)
 	}
 
-	if !filemngt.FileExists(filename) {
-		return ErrFileDoesNotExist(filename)
+	if merge || extract {
+		if !filemngt.FileExists(filename) {
+			return ErrFileDoesNotExist(filename)
+		}
 	}
 
 	// make channel for errors
 	errs := make(chan error)
 
 	go func() {
-		errs <- core.Start(filename, dest, merge)
+		mode := core.EMNormal
+		if extract {
+			mode = core.EMExtract
+		}
+		if merge {
+			mode = core.EMMerge
+		}
+		errs <- core.Start(filename, dest, mode)
 	}()
 
 	// break if any of them return an error (blocks exit)

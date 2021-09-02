@@ -7,14 +7,14 @@ import (
 	gopg "github.com/go-pg/pg/v10"
 )
 
-func (fsr *FlightSessionReading) InsertIntoDB(db *gopg.DB) bool {
+func (fsr *FlightRecord) InsertIntoDB(db *gopg.DB) bool {
 	res, err := db.Model(fsr).OnConflict("DO NOTHING").Insert()
 	if err != nil {
 		panic(err)
 	}
 
 	if res.RowsAffected() > 0 {
-		//fmt.Println("FlightSessionReading inserted")
+		//fmt.Println("FlightRecord inserted")
 		return true
 	}
 

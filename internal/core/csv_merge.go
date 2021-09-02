@@ -57,7 +57,7 @@ func processCSVLogs(fl *FlightLog) {
 	fl.SessionToken = data.FNV64aS(baseFSTime.String())
 	fmt.Println(baseFSTime.Format("2006-01-02, 15:04:05"))
 
-	fs := &model.FlightSession{
+	fs := &model.Flight{
 		DroneID:    fl.DroneID,
 		Hash:       fl.SessionToken,
 		LastUpdate: baseFSTime,
@@ -139,9 +139,9 @@ func parseNInsertIntoDB(seq int, rtt data.RTT) bool {
 	currFCCTime := timemgr.UnixTime(rtt.FCCTime)
 	lastUpdate := baseFSTime.Add(currFCCTime.Sub(baseFCCTime))
 
-	fsr := &model.FlightSessionReading{
+	fsr := &model.FlightRecord{
 		DroneID:         1,
-		FlightSessionID: 1,
+		FlightID: 1,
 		Sequence:        seq,
 		Latitude:        rtt.Lat,
 		Longitude:       rtt.Long,
