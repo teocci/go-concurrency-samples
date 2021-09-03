@@ -1,6 +1,7 @@
 // Package logger
 // Created by Teocci.
 // Author: teocci@yandex.com on 2021-Aug-23
+//go:build windows
 // +build windows
 
 package logger

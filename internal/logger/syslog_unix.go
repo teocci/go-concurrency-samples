@@ -1,8 +1,8 @@
 // Package unix
 // Created by Teocci.
 // Author: teocci@yandex.com on 2021-Aug-23
-
-// +build !windows,!plan9,!nacl,!darwin
+//go:build linux
+// +build linux
 
 package logger
 
@@ -15,7 +15,7 @@ type syslog struct {
 	inner *native.Writer
 }
 
-func newSyslog(prefix string) (io.WriteCloser, error) {
+func NewSyslog(prefix string) (io.WriteCloser, error) {
 	inner, err := native.New(native.LOG_INFO|native.LOG_DAEMON, prefix)
 	if err != nil {
 		return nil, err
