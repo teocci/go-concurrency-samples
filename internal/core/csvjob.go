@@ -34,15 +34,15 @@ package core
 //	defer db.Close()
 //
 //	// TODO: Generate date as 2021-08-01, 13:00:00
-//	baseFSTime = timemgr.GenBaseDate(fl.LogNum)
+//	flightDate = timemgr.GenBaseDate(fl.LogNum)
 //	baseFCCTime = timemgr.UnixTime(geos[0].FCCTime)
-//	fl.SessionToken = data.FNV64aS(baseFSTime.String())
-//	fmt.Println(baseFSTime.Format("2006-01-02, 15:04:05"))
+//	fl.SessionToken = data.FNV64aS(flightDate.String())
+//	fmt.Println(flightDate.Format("2006-01-02, 15:04:05"))
 //
 //	fs := &model.FlightSession{
 //		DroneID:    fl.DroneID,
 //		Hash:       fl.SessionToken,
-//		LastUpdate: baseFSTime,
+//		LastUpdate: flightDate,
 //	}
 //
 //	res, err := db.Model(fs).OnConflict("DO NOTHING").Insert()
@@ -62,7 +62,7 @@ package core
 //				last = j
 //				rtt = &data.RTT{
 //					DroneID:         1,
-//					FlightSessionID: 1,
+//					FlightID: 1,
 //					Lat:             geo.Lat,
 //					Long:            geo.Long,
 //					Alt:             geo.Alt,
@@ -102,7 +102,7 @@ package core
 //				last = j
 //				rtt = &data.RTT{
 //					DroneID:         1,
-//					FlightSessionID: 1,
+//					FlightID: 1,
 //					Lat:             geo.Lat,
 //					Long:            geo.Long,
 //					Alt:             geo.Alt,

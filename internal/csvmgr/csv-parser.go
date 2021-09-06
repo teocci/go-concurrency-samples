@@ -60,12 +60,6 @@ func Merge(geos []data.GEOData, fccs []data.FCC, rtts []*data.RTT) {
 		rtts = append(rtts, r)
 	}
 
-	for i, rec := range rtts {
-		if i < 50 {
-			fmt.Printf("%#v\n", rec)
-		}
-	}
-
 	fmt.Println("Count Concurrent ", len(rtts))
 }
 
@@ -74,18 +68,16 @@ func findFCCData(geo data.GEOData, fccs []data.FCC, offset int, rtt *data.RTT) i
 		if geo.FCCTime == fccs[i].FCCTime {
 			fcc := fccs[i]
 			rtt = &data.RTT{
-				DroneID:         1,
-				FlightSessionID: 1,
-				Lat:             geo.Lat,
-				Long:            geo.Long,
-				Alt:             geo.Alt,
-				Roll:            geo.Roll,
-				Pitch:           geo.Pitch,
-				Yaw:             geo.Yaw,
-				BatVoltage:      fcc.BatVoltage,
-				BatCurrent:      fcc.BatCurrent,
-				BatPercent:      fcc.BatPercent,
-				BatTemperature:  fcc.BatTemperature,
+				Lat:            geo.Lat,
+				Long:           geo.Long,
+				Alt:            geo.Alt,
+				Roll:           geo.Roll,
+				Pitch:          geo.Pitch,
+				Yaw:            geo.Yaw,
+				BatVoltage:     fcc.BatVoltage,
+				BatCurrent:     fcc.BatCurrent,
+				BatPercent:     fcc.BatPercent,
+				BatTemperature: fcc.BatTemperature,
 				Temperature:     fcc.Temperature,
 				GPSTime:         fcc.GPSTime,
 			}

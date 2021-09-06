@@ -9,9 +9,9 @@ import (
 )
 
 type RTT struct {
-	DroneID         int     `json:"drone_id" csv:"drone_id"`
-	FlightSessionID int     `json:"flight_session_id" csv:"flight_session_id"`
-	FCCTime         float32 `json:"fcc_time" csv:"FCCTime"`
+	DroneID  int64   `json:"drone_id" csv:"drone_id"`
+	FlightID int64   `json:"flight_id" csv:"flight_id"`
+	FCCTime  float32 `json:"fcc_time" csv:"FCCTime"`
 	Lat             float32 `json:"lat" csv:"lat"`
 	Long            float32 `json:"long" csv:"lat"`
 	Alt             float32 `json:"alt" csv:"lat"`
@@ -44,18 +44,18 @@ func ParseRTT(data []string) *RTT {
 	gpsTime, _ := strconv.ParseFloat(data[14], 64)
 
 	return &RTT{
-		DroneID:         droneID,
-		FlightSessionID: sessionID,
-		FCCTime:         float32(fccTime),
-		Lat:             float32(lat),
-		Long:            float32(long),
-		Alt:             float32(alt),
-		Roll:            float32(roll),
-		Pitch:           float32(pitch),
-		Yaw:             float32(yaw),
-		BatVoltage:      float32(batVol),
-		BatCurrent:      float32(batCurr),
-		BatPercent:      float32(batPct),
+		DroneID:    int64(droneID),
+		FlightID:   int64(sessionID),
+		FCCTime:    float32(fccTime),
+		Lat:        float32(lat),
+		Long:       float32(long),
+		Alt:        float32(alt),
+		Roll:       float32(roll),
+		Pitch:      float32(pitch),
+		Yaw:        float32(yaw),
+		BatVoltage: float32(batVol),
+		BatCurrent: float32(batCurr),
+		BatPercent: float32(batPct),
 		BatTemperature:  float32(batTemp),
 		Temperature:     float32(temp),
 		GPSTime:         float32(gpsTime),

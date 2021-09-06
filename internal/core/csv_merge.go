@@ -14,12 +14,12 @@ import (
 	"github.com/gocarina/gocsv"
 	"github.com/teocci/go-concurrency-samples/internal/csvmgr"
 	"github.com/teocci/go-concurrency-samples/internal/data"
+	"github.com/teocci/go-concurrency-samples/internal/gcs"
 	"github.com/teocci/go-concurrency-samples/internal/model"
 	"github.com/teocci/go-concurrency-samples/internal/timemgr"
 )
 
 var (
-	baseFSTime  time.Time
 	baseFCCTime time.Time
 
 	inserts int
@@ -52,39 +52,52 @@ func processCSVLogs(fl *FlightLog) {
 	_ = rtts
 
 	// TODO: Generate date as 2021-08-01, 13:00:00
-	baseFSTime = timemgr.GenBaseDate(fl.LogNum)
-	baseFCCTime = timemgr.UnixTime(geos[0].FCCTime)
-	fl.SessionToken = data.FNV64aS(baseFSTime.String())
-	fmt.Println(baseFSTime.Format("2006-01-02, 15:04:05"))
-
+	flightDate := timemgr.GenBaseDate(int(fl.LogNum))
+	fl.SessionToken = data.FNV64aS(flightDate.String())
 	fs := &model.Flight{
 		DroneID:    fl.DroneID,
 		Hash:       fl.SessionToken,
-		LastUpdate: baseFSTime,
+		LastUpdate: flightDate,
 	}
 
-	fs.InsertIntoDB(db)
+	if fs.Insert(db) {
+		fmt.Println("Flight date:", fs.Date.Format("2006-01-02, 15:04:05"))
+		rtts = Merge(geos, fccs, fs)
+		CrunchRTTData(rtts, fs)
 
-	Merge(geos, fccs, &rtts)
-	CrunchRTTData(rtts)
+		fs.Update(db)
+	} else {
+		log.Printf("flight session: %#v was not processed", fs.Hash)
+	}
 }
 
-func CrunchRTTData(rtts []data.RTT) {
+func CrunchRTTData(rtts []data.RTT, fs *model.Flight) {
 	inserts = 0
-	data.SortRTTByFCCTime(rtts)
 
-	for i, r := range rtts {
-		if parseNInsertIntoDB(i, r) {
+	data.SortRTTByFCCTime(rtts)
+	for seq, r := range rtts {
+		var prevRTT data.RTT
+		if seq == 0 {
+			baseFCCTime = timemgr.UnixTime(r.FCCTime)
+		}
+		if seq > 0 {
+			prevRTT = rtts[seq-1]
+		}
+		fr, ok := parseNInsertIntoDB(seq, r, prevRTT, fs)
+		if ok {
+			fs.Length++
+			fs.Duration += fr.Duration
+			fs.Distance += fr.Distance
 			inserts++
 		}
 	}
 
-	total += inserts
-
 	fmt.Printf("CSV Recs: %d | DB Inserts: %d | Total Inserts: %d\n", len(rtts), inserts, total)
+
+	total += inserts
 }
 
-func Merge(geos []data.GEOData, fccs []data.FCC, rtts *[]data.RTT) {
+func Merge(geos []data.GEOData, fccs []data.FCC, fs *model.Flight) (rtts []data.RTT) {
 	numWps := runtime.NumCPU()
 	jobs := make(chan data.RTT, numWps)
 	res := make(chan data.RTT)
@@ -114,11 +127,17 @@ func Merge(geos []data.GEOData, fccs []data.FCC, rtts *[]data.RTT) {
 	}
 
 	go func() {
-		for _, geo := range geos {
+		for i, geo := range geos {
 			var rtt *data.RTT
-			var last int
-			last, rtt = findFCCData(geo, fccs, last)
+			rtt = findFCCData(geo, fccs)
 			if rtt != nil {
+				rtt.DroneID = fs.DroneID
+				rtt.FlightID = fs.ID
+				_ = i
+				//if i < 10 {
+				//	fmt.Printf("rtt.FCCTime[%.2f],, geo.FCCTime[%.2f]\n", rtt.FCCTime, geo.FCCTime)
+				//}
+
 				jobs <- *rtt
 			}
 		}
@@ -131,57 +150,79 @@ func Merge(geos []data.GEOData, fccs []data.FCC, rtts *[]data.RTT) {
 	}()
 
 	for r := range res {
-		*rtts = append(*rtts, r)
+		rtts = append(rtts, r)
 	}
+
+	return rtts
 }
 
-func parseNInsertIntoDB(seq int, rtt data.RTT) bool {
-	currFCCTime := timemgr.UnixTime(rtt.FCCTime)
-	lastUpdate := baseFSTime.Add(currFCCTime.Sub(baseFCCTime))
+func parseNInsertIntoDB(seq int, currRTT data.RTT, prevRTT data.RTT, fs *model.Flight) (model.FlightRecord, bool) {
+	currFCCTime := timemgr.UnixTime(currRTT.FCCTime)
+	lastUpdate := fs.Date.Add(currFCCTime.Sub(baseFCCTime))
 
-	fsr := &model.FlightRecord{
-		DroneID:         1,
-		FlightID: 1,
-		Sequence:        seq,
-		Latitude:        rtt.Lat,
-		Longitude:       rtt.Long,
-		Altitude:        rtt.Alt,
-		Roll:            rtt.Roll,
-		Pitch:           rtt.Pitch,
-		Yaw:             rtt.Yaw,
-		BatVoltage:      rtt.BatVoltage,
-		BatCurrent:      rtt.BatCurrent,
-		BatPercent:      rtt.BatPercent,
-		BatTemperature:  rtt.BatTemperature,
-		Temperature:     rtt.Temperature,
-		LastUpdate:      lastUpdate,
+	var prevFCCTime time.Time
+	var duration int64
+	var distance float32
+	var speed float32
+
+	if seq > 0 {
+		prevFCCTime = timemgr.UnixTime(prevRTT.FCCTime)
+		duration = int64(currFCCTime.Sub(prevFCCTime) / time.Millisecond)
+
+		orig := gcs.SCS{Lat: float64(prevRTT.Lat), Lon: float64(prevRTT.Long)}
+		dest := gcs.SCS{Lat: float64(currRTT.Lat), Lon: float64(currRTT.Long)}
+		distance = float32(orig.MetersTo(dest))
+
+		if duration > 0 {
+			speed = distance / float32(duration)
+		}
 	}
 
-	if seq < 5 {
-		fmt.Printf("[%d]->%#v\n", seq, fsr)
+	fsr := model.FlightRecord{
+		DroneID:        1,
+		FlightID:       fs.ID,
+		Sequence:       int64(seq),
+		Duration:       duration,
+		Distance:       distance,
+		Speed:          speed,
+		Latitude:       currRTT.Lat,
+		Longitude:      currRTT.Long,
+		Altitude:       currRTT.Alt,
+		Roll:           currRTT.Roll,
+		Pitch:          currRTT.Pitch,
+		Yaw:            currRTT.Yaw,
+		BatVoltage:     currRTT.BatVoltage,
+		BatCurrent:     currRTT.BatCurrent,
+		BatPercent:     currRTT.BatPercent,
+		BatTemperature: currRTT.BatTemperature,
+		Temperature:    currRTT.Temperature,
+		LastUpdate:     lastUpdate,
 	}
 
-	return fsr.InsertIntoDB(db)
+	//if seq < 5 {
+	//	fmt.Printf("[%d]->%#v\n", seq, fsr)
+	//	fmt.Printf("duration[%d], distance[%.2f], speed[%.2f], currFCCTime[%d], baseFCCTime[%d]\n", duration, distance, speed, currFCCTime, baseFCCTime)
+	//}
+
+	return fsr, fsr.Insert(db)
 }
 
-func findFCCData(geo data.GEOData, fccs []data.FCC, offset int) (int, *data.RTT) {
-	for i := offset; i < len(fccs); i++ {
+func findFCCData(geo data.GEOData, fccs []data.FCC) *data.RTT {
+	for i := 0; i < len(fccs); i++ {
 		if geo.FCCTime == fccs[i].FCCTime {
 			fcc := fccs[i]
 
-			return i, &data.RTT{
-				DroneID:         1,
-				FlightSessionID: 1,
-				FCCTime:         geo.FCCTime,
-				Lat:             geo.Lat,
-				Long:            geo.Long,
-				Alt:             geo.Alt,
-				Roll:            geo.Roll,
-				Pitch:           geo.Pitch,
-				Yaw:             geo.Yaw,
-				BatVoltage:      fcc.BatVoltage,
-				BatCurrent:      fcc.BatCurrent,
-				BatPercent:      fcc.BatPercent,
+			return &data.RTT{
+				FCCTime:    fcc.FCCTime,
+				Lat:        geo.Lat,
+				Long:       geo.Long,
+				Alt:        geo.Alt,
+				Roll:       geo.Roll,
+				Pitch:      geo.Pitch,
+				Yaw:        geo.Yaw,
+				BatVoltage: fcc.BatVoltage,
+				BatCurrent: fcc.BatCurrent,
+				BatPercent: fcc.BatPercent,
 				BatTemperature:  fcc.BatTemperature,
 				Temperature:     fcc.Temperature,
 				GPSTime:         fcc.GPSTime,
@@ -189,5 +230,5 @@ func findFCCData(geo data.GEOData, fccs []data.FCC, offset int) (int, *data.RTT)
 		}
 	}
 
-	return 0, nil
+	return nil
 }

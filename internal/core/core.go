@@ -147,13 +147,13 @@ func loadLogPaths(path string, f fs.DirEntry, e error) error {
 			if len(id) == 0 {
 				config.Log.Infoln(ErrorSessionIndexNotFound())
 			}
-			var num int
+			var num int64
 			if len(id) > 0 {
 				n, err := strconv.ParseInt(id, 0, 64)
 				if err != nil {
 					config.Log.Errorln(ErrorSessionIndexNotNumerical())
 				}
-				num = int(n)
+				num = n
 			}
 
 			t, err := filemngt.Hash(id + droneName)

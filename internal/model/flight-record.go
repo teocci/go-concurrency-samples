@@ -7,7 +7,7 @@ import (
 	gopg "github.com/go-pg/pg/v10"
 )
 
-func (fsr *FlightRecord) InsertIntoDB(db *gopg.DB) bool {
+func (fsr *FlightRecord) Insert(db *gopg.DB) bool {
 	res, err := db.Model(fsr).OnConflict("DO NOTHING").Insert()
 	if err != nil {
 		panic(err)

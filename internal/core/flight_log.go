@@ -4,11 +4,11 @@
 package core
 
 type FlightLog struct {
-	DroneID      int
+	DroneID      int64
 	DroneName    string
 	SessionToken string
 	LogID        string
-	LogNum       int
+	LogNum       int64
 	SessionDir   string
 	LoggerDir    string
 	Files        map[string]string

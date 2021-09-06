@@ -6,13 +6,14 @@ package model
 import "time"
 
 type Flight struct {
-	ID          int       `json:"id" csv:"id" pg:"id,pk,unique"`
-	DroneID     int       `json:"drone_id" csv:"drone_id" pg:"drone_id"`
+	ID          int64     `json:"id" csv:"id" pg:"id,pk,unique"`
+	DroneID     int64     `json:"drone_id" csv:"drone_id" pg:"drone_id"`
 	Hash        string    `json:"hash" csv:"hash" pg:"hash,unique,notnull"`
 	Mission     string    `json:"mission" csv:"mission" pg:"mission,unique,notnull"`
 	MissionInfo string    `json:"mission_info" csv:"mission_info" pg:"mission_info"`
 	MissionType string    `json:"mission_type" csv:"mission_type" pg:"mission_type"`
-	Duration    float32   `json:"duration" csv:"duration" pg:"duration"`
+	Length      int64     `json:"length" csv:"length" pg:"length"`
+	Duration    int64     `json:"duration" csv:"duration" pg:"duration"`
 	Distance    float32   `json:"distance" csv:"distance" pg:"distance"`
 	Status      int       `json:"status" csv:"status" pg:"status"`
 	Date        time.Time `json:"date" csv:"date" pg:"date"`
@@ -20,10 +21,13 @@ type Flight struct {
 }
 
 type FlightRecord struct {
-	ID             int       `json:"id" csv:"id" pg:"id,pk,unique"`
-	DroneID        int       `json:"drone_id" csv:"drone_id" pg:"drone_id"`
-	FlightID       int       `json:"flight_id" pg:"flight_id" pg:"flight_id"`
-	Sequence       int       `json:"sequence" csv:"seq" pg:"sequence"`
+	ID             int64     `json:"id" csv:"id" pg:"id,pk,unique"`
+	DroneID        int64     `json:"drone_id" csv:"drone_id" pg:"drone_id"`
+	FlightID       int64     `json:"flight_id" pg:"flight_id" pg:"flight_id"`
+	Sequence       int64     `json:"sequence" csv:"seq" pg:"sequence"`
+	Duration       int64     `json:"duration" csv:"duration" pg:"duration"`
+	Distance       float32   `json:"distance" csv:"distance" pg:"distance"`
+	Speed          float32   `json:"speed" csv:"speed" pg:"speed"`
 	Latitude       float32   `json:"latitude" csv:"lat" pg:"latitude"`
 	Longitude      float32   `json:"longitude" csv:"long" pg:"longitude"`
 	Altitude       float32   `json:"altitude" csv:"alt" pg:"altitude"`
