@@ -199,10 +199,10 @@ func parseNInsertIntoDB(seq int, currRTT data.RTT, prevRTT data.RTT, fs *model.F
 		LastUpdate:     lastUpdate,
 	}
 
-	//if seq < 5 {
-	//	fmt.Printf("[%d]->%#v\n", seq, fsr)
-	//	fmt.Printf("duration[%d], distance[%.2f], speed[%.2f], currFCCTime[%d], baseFCCTime[%d]\n", duration, distance, speed, currFCCTime, baseFCCTime)
-	//}
+	if seq < 5 {
+		fmt.Printf("[%d]->%#v\n", seq, fsr)
+		//fmt.Printf("duration[%d], distance[%.2f], speed[%.2f], currFCCTime[%d], baseFCCTime[%d]\n", duration, distance, speed, currFCCTime, baseFCCTime)
+	}
 
 	return fsr, fsr.Insert(db)
 }
