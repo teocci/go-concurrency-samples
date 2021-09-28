@@ -213,19 +213,19 @@ func findFCCData(geo data.GEOData, fccs []data.FCC) *data.RTT {
 			fcc := fccs[i]
 
 			return &data.RTT{
-				FCCTime:    fcc.FCCTime,
-				Lat:        geo.Lat,
-				Long:       geo.Long,
-				Alt:        geo.Alt,
-				Roll:       geo.Roll,
-				Pitch:      geo.Pitch,
-				Yaw:        geo.Yaw,
-				BatVoltage: fcc.BatVoltage,
-				BatCurrent: fcc.BatCurrent,
-				BatPercent: fcc.BatPercent,
-				BatTemperature:  fcc.BatTemperature,
-				Temperature:     fcc.Temperature,
-				GPSTime:         fcc.GPSTime,
+				FCCTime:        fcc.FCCTime,
+				Lat:            geo.Lat,
+				Long:           geo.Long,
+				Alt:            geo.Alt,
+				Roll:           geo.Roll,
+				Pitch:          geo.Pitch,
+				Yaw:            geo.Yaw,
+				BatVoltage:     fcc.BatVoltage,
+				BatCurrent:     fcc.BatCurrent,
+				BatPercent:     fcc.BatPercent,
+				BatTemperature: fcc.BatTemperature,
+				Temperature:    fcc.Temperature,
+				GPSTime:        fcc.GPSTime,
 			}
 		}
 	}

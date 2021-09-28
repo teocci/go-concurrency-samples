@@ -9,21 +9,21 @@ import (
 )
 
 type RTT struct {
-	DroneID  int64   `json:"drone_id" csv:"drone_id"`
-	FlightID int64   `json:"flight_id" csv:"flight_id"`
-	FCCTime  float32 `json:"fcc_time" csv:"FCCTime"`
-	Lat             float32 `json:"lat" csv:"lat"`
-	Long            float32 `json:"long" csv:"lat"`
-	Alt             float32 `json:"alt" csv:"lat"`
-	Roll            float32 `json:"roll" csv:"lat"`
-	Pitch           float32 `json:"pitch" csv:"lat"`
-	Yaw             float32 `json:"yaw" csv:"lat"`
-	BatVoltage      float32 `json:"battery_voltage" csv:"battery_voltage"`
-	BatCurrent      float32 `json:"battery_current" csv:"battery_current"`
-	BatPercent      float32 `json:"battery_percentage" csv:"battery_percentage"`
-	BatTemperature  float32 `json:"battery_temperature" csv:"battery_temperature"`
-	Temperature     float32 `json:"temperature" csv:"temperature"`
-	GPSTime         float32 `json:"modify_date" csv:"modify_date"`
+	DroneID        int64   `json:"drone_id" csv:"drone_id"`
+	FlightID       int64   `json:"flight_id" csv:"flight_id"`
+	FCCTime        float32 `json:"fcc_time" csv:"FCCTime"`
+	Lat            float32 `json:"lat" csv:"lat"`
+	Long           float32 `json:"long" csv:"long"`
+	Alt            float32 `json:"alt" csv:"alt"`
+	Roll           float32 `json:"roll" csv:"roll"`
+	Pitch          float32 `json:"pitch" csv:"pitch"`
+	Yaw            float32 `json:"yaw" csv:"yaw"`
+	BatVoltage     float32 `json:"battery_voltage" csv:"battery_voltage"`
+	BatCurrent     float32 `json:"battery_current" csv:"battery_current"`
+	BatPercent     float32 `json:"battery_percentage" csv:"battery_percentage"`
+	BatTemperature float32 `json:"battery_temperature" csv:"battery_temperature"`
+	Temperature    float32 `json:"temperature" csv:"temperature"`
+	GPSTime        float32 `json:"modify_date" csv:"modify_date"`
 }
 
 func ParseRTT(data []string) *RTT {
@@ -44,21 +44,21 @@ func ParseRTT(data []string) *RTT {
 	gpsTime, _ := strconv.ParseFloat(data[14], 64)
 
 	return &RTT{
-		DroneID:    int64(droneID),
-		FlightID:   int64(sessionID),
-		FCCTime:    float32(fccTime),
-		Lat:        float32(lat),
-		Long:       float32(long),
-		Alt:        float32(alt),
-		Roll:       float32(roll),
-		Pitch:      float32(pitch),
-		Yaw:        float32(yaw),
-		BatVoltage: float32(batVol),
-		BatCurrent: float32(batCurr),
-		BatPercent: float32(batPct),
-		BatTemperature:  float32(batTemp),
-		Temperature:     float32(temp),
-		GPSTime:         float32(gpsTime),
+		DroneID:        int64(droneID),
+		FlightID:       int64(sessionID),
+		FCCTime:        float32(fccTime),
+		Lat:            float32(lat),
+		Long:           float32(long),
+		Alt:            float32(alt),
+		Roll:           float32(roll),
+		Pitch:          float32(pitch),
+		Yaw:            float32(yaw),
+		BatVoltage:     float32(batVol),
+		BatCurrent:     float32(batCurr),
+		BatPercent:     float32(batPct),
+		BatTemperature: float32(batTemp),
+		Temperature:    float32(temp),
+		GPSTime:        float32(gpsTime),
 	}
 }
 
