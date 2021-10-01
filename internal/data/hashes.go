@@ -34,8 +34,9 @@ func FNV64a(s string) uint64 {
 	return uint64Hasher(fnv.New64a(), s)
 }
 
+// FNV64aS hashes using fnv64a algorithm and return a string
 func FNV64aS(s string) string {
-	return strconv.FormatUint(uint64Hasher(fnv.New64a(), s), 10)
+	return strconv.FormatUint(FNV64a(s), 10)
 }
 
 // MD5 hashes using md5 algorithm
