@@ -9,9 +9,9 @@ import (
 	"crypto/sha256"
 	"crypto/sha512"
 	"encoding/hex"
+	"fmt"
 	"hash"
 	"hash/fnv"
-	"strconv"
 )
 
 // FNV32 hashes using fnv32 algorithm
@@ -36,7 +36,7 @@ func FNV64a(s string) uint64 {
 
 // FNV64aS hashes using fnv64a algorithm and return a string
 func FNV64aS(s string) string {
-	return strconv.FormatUint(FNV64a(s), 10)
+	return fmt.Sprintf("%x", FNV64a(s))
 }
 
 // MD5 hashes using md5 algorithm
