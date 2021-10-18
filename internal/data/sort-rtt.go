@@ -16,7 +16,7 @@ func (a RTTByFCCTime) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 // values to the end.  There are also Float64Key and Float64Less, and
 // [Type]Key functions for int types.
 
-// Key returns a uint64 that is lower for more southerly latitudes.
+// Key returns an uint64 that is lower for more southerly latitudes.
 func (a RTTByFCCTime) Key(i int) uint64 {
 	return sortutil.Float32Key(a[i].FCCTime)
 }

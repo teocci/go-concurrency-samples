@@ -6,10 +6,10 @@ package gcs
 type MetricLength float64
 
 const (
-	CentiMetre   MetricLength = 1
-	CM                        = CentiMetre
-	Metre                     = 100 * CM
+	Metre        MetricLength = 1
 	M                         = Metre
+	CentiMetre                = M / 1e2
+	CM                        = CentiMetre
 	KiloMetre                 = 1000 * Metre
 	KM                        = KiloMetre
 	Mile                      = 1609.344 * Metre
@@ -23,7 +23,7 @@ const (
 	earthRadiusMi = earthRadiusM / Mi // radius of the earth in miles.
 	earthRadiusKm = earthRadiusM / KM // radius of the earth in kilometers.
 	earthRadiusM  = 6378137 * M       // radius of the earth in meters.
-	earthRadiusCm = 637816000 * CM    // radius of the earth in centi meters.
+	earthRadiusCm = earthRadiusM / CM // radius of the earth in centi meters.
 )
 
 func MapML() map[string]MetricLength {

@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/teocci/go-concurrency-samples/internal/model"
 	"io/fs"
 	"log"
 	"os"
@@ -20,6 +19,7 @@ import (
 	"github.com/teocci/go-concurrency-samples/internal/config"
 	"github.com/teocci/go-concurrency-samples/internal/filemngt"
 	"github.com/teocci/go-concurrency-samples/internal/logger"
+	"github.com/teocci/go-concurrency-samples/internal/model"
 	"github.com/teocci/go-concurrency-samples/internal/unzip"
 )
 
