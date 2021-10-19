@@ -11,7 +11,7 @@ import (
 	"github.com/teocci/go-concurrency-samples/internal/cmd/cmdapp"
 	"github.com/teocci/go-concurrency-samples/internal/config"
 	"github.com/teocci/go-concurrency-samples/internal/core"
-	"github.com/teocci/go-concurrency-samples/internal/filemngt"
+	"github.com/teocci/go-concurrency-samples/internal/filemgr"
 	"github.com/teocci/go-concurrency-samples/internal/logger"
 )
 
@@ -84,7 +84,7 @@ func runE(ccmd *cobra.Command, args []string) error {
 	}
 
 	if merge || extract {
-		if !filemngt.FileExists(filename) {
+		if !filemgr.FileExists(filename) {
 			return ErrFileDoesNotExist(filename)
 		}
 	}

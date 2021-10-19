@@ -57,6 +57,8 @@ func processCSVLogs(fl *FlightLog) {
 	fs := &model.Flight{
 		DroneID:    fl.DroneID,
 		Hash:       fl.SessionToken,
+		Status:     model.FlightStatusCreated,
+		Date:       flightDate,
 		LastUpdate: flightDate,
 	}
 
@@ -71,29 +73,32 @@ func processCSVLogs(fl *FlightLog) {
 	}
 }
 
-func CrunchRTTData(rtts []data.RTT, fs *model.Flight) {
+func CrunchRTTData(records []data.RTT, flight *model.Flight) {
 	inserts = 0
 
-	data.SortRTTByFCCTime(rtts)
-	for seq, r := range rtts {
-		var prevRTT data.RTT
+	data.SortRTTByFCCTime(records)
+	for seq, r := range records {
+		var prevRec data.RTT
 		if seq == 0 {
 			baseFCCTime = timemgr.UnixTime(r.FCCTime)
 		}
 		if seq > 0 {
-			prevRTT = rtts[seq-1]
+			prevRec = records[seq-1]
 		}
-		fr, ok := parseNInsertIntoDB(seq, r, prevRTT, fs)
+		fr, ok := parseNInsertIntoDB(seq, r, prevRec, flight)
 		if ok {
-			fs.Length++
-			fs.Duration += fr.Duration
-			fs.Distance += fr.Distance
+			flight.Length++
+			flight.Duration += fr.Duration
+			flight.Distance += fr.Distance
 			inserts++
 		}
 	}
 
-	fmt.Printf("CSV Recs: %d | DB Inserts: %d | Total Inserts: %d\n", len(rtts), inserts, total)
+	if inserts > 0 {
+		flight.Status |= model.FlightStatusCompleted | model.FlightStatusProcessed
+	}
 
+	fmt.Printf("CSV Recs: %d | DB Inserts: %d | Total Inserts: %d\n", len(records), inserts, total)
 	total += inserts
 }
 

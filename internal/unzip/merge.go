@@ -13,7 +13,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/teocci/go-concurrency-samples/internal/filemngt"
+	"github.com/teocci/go-concurrency-samples/internal/filemgr"
 )
 
 const (
@@ -29,23 +29,23 @@ func Merge(src, dest string) (string, []string, error) {
 	var srcFFN, mergedFN string
 	var err error
 
-	if filemngt.FileExists(src) {
+	if filemgr.FileExists(src) {
 		basePath, srcFFN = filepath.Split(src)
 		srcExt := filepath.Ext(srcFFN)
 		srcFN := strings.TrimSuffix(srcFFN, srcExt)
 
 		if len(basePath) == 0 {
-			basePath = filemngt.PWD()
+			basePath = filemgr.PWD()
 		}
 		fmt.Println("basePath:", basePath)
 		//parent := filepath.Dir(basePath)
 		//fmt.Println("parent:", parent)
 
-		destPath, _ = filemngt.DirExtractPathE(dest)
+		destPath, _ = filemgr.DirExtractPathE(dest)
 		if len(destPath) == 0 {
 			fmt.Println("Make working dir:", tmpMergeDir)
 			destPath = filepath.Join(basePath, tmpMergeDir)
-			if err = filemngt.MakeDirIfNotExist(destPath); err != nil {
+			if err = filemgr.MakeDirIfNotExist(destPath); err != nil {
 				return emptyString, nil, err
 			}
 		}

@@ -1,7 +1,7 @@
-// Package filemngt
+// Package filemgr
 // Created by RTT.
 // Author: teocci@yandex.com on 2021-Aug-27
-package filemngt
+package filemgr
 
 import (
 	"fmt"

@@ -17,7 +17,7 @@ import (
 
 	gopg "github.com/go-pg/pg/v10"
 	"github.com/teocci/go-concurrency-samples/internal/config"
-	"github.com/teocci/go-concurrency-samples/internal/filemngt"
+	"github.com/teocci/go-concurrency-samples/internal/filemgr"
 	"github.com/teocci/go-concurrency-samples/internal/logger"
 	"github.com/teocci/go-concurrency-samples/internal/model"
 	"github.com/teocci/go-concurrency-samples/internal/unzip"
@@ -156,7 +156,7 @@ func loadLogPaths(path string, f fs.DirEntry, e error) error {
 				num = n
 			}
 
-			t, err := filemngt.Hash(id + droneName)
+			t, err := filemgr.Hash(id + droneName)
 			if err != nil {
 				return err
 			}

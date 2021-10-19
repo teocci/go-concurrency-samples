@@ -12,7 +12,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/teocci/go-concurrency-samples/internal/filemngt"
+	"github.com/teocci/go-concurrency-samples/internal/filemgr"
 	"github.com/teocci/go-concurrency-samples/internal/units"
 )
 
@@ -25,19 +25,19 @@ const (
 
 // Split method splits the files into part files of user defined lengths
 func Split(filename string, dest string, size int) error {
-	if filemngt.FileExists(filename) {
+	if filemgr.FileExists(filename) {
 		var err error
 		bufferSize := int64(units.KiB)           // 1 KB for optimal splitting
 		partSize := int64(size * int(units.MiB)) // Size in MiB
 
-		filePath, err := filemngt.FilePathE(filename)
+		filePath, err := filemgr.FilePathE(filename)
 		if err != nil {
 			return err
 		}
 		fileStats, _ := os.Stat(filePath)
 		basePath, fn := filepath.Split(filename)
 		if len(basePath) == 0 {
-			basePath = filemngt.PWD()
+			basePath = filemgr.PWD()
 		}
 		fmt.Println("basePath:", basePath)
 
@@ -64,7 +64,7 @@ func Split(filename string, dest string, size int) error {
 			partFilePath := filepath.Join(workPath, partFileName)
 			partFile, err := os.OpenFile(partFilePath, os.O_CREATE|os.O_WRONLY, 0644)
 			if err != nil {
-				return filemngt.ErrCanNotOpenFile(partFilePath, err.Error())
+				return filemgr.ErrCanNotOpenFile(partFilePath, err.Error())
 			}
 
 			fmt.Println("Creating file:", partFileName)
@@ -95,7 +95,7 @@ func Split(filename string, dest string, size int) error {
 		hashFile.Close()
 		fmt.Printf("Splitted successfully! Find the individual file hashes in %s", hashFileName)
 	} else {
-		return filemngt.ErrNotValidFile(filename)
+		return filemgr.ErrNotValidFile(filename)
 	}
 
 	return nil
@@ -107,11 +107,11 @@ func findWorkPath(path string, dest string) (string, error) {
 	if len(dest) == 0 {
 		fmt.Println("Make working dir:", tmpSplitDir)
 		destPath = filepath.Join(path, tmpSplitDir)
-		if err = filemngt.MakeDirIfNotExist(destPath); err != nil {
+		if err = filemgr.MakeDirIfNotExist(destPath); err != nil {
 			return emptyString, err
 		}
 	} else {
-		destPath, err = filemngt.DirExtractPathE(dest)
+		destPath, err = filemgr.DirExtractPathE(dest)
 		if err != nil {
 			return emptyString, err
 		}
