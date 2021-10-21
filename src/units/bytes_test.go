@@ -4,7 +4,7 @@
 package units_test
 
 import (
-	"github.com/teocci/go-concurrency-samples/internal/units"
+	"github.com/teocci/go-concurrency-samples/src/units"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

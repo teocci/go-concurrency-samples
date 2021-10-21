@@ -8,11 +8,11 @@ import (
 	"log"
 
 	"github.com/spf13/cobra"
-	"github.com/teocci/go-concurrency-samples/internal/cmd/cmdapp"
-	"github.com/teocci/go-concurrency-samples/internal/config"
-	"github.com/teocci/go-concurrency-samples/internal/core"
-	"github.com/teocci/go-concurrency-samples/internal/filemgr"
-	"github.com/teocci/go-concurrency-samples/internal/logger"
+	"github.com/teocci/go-concurrency-samples/src/cmd/cmdapp"
+	"github.com/teocci/go-concurrency-samples/src/config"
+	"github.com/teocci/go-concurrency-samples/src/core"
+	"github.com/teocci/go-concurrency-samples/src/filemgr"
+	"github.com/teocci/go-concurrency-samples/src/logger"
 )
 
 var (

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/teocci/go-concurrency-samples/internal/logger"
+	"github.com/teocci/go-concurrency-samples/src/logger"
 	"path/filepath"
 )
 

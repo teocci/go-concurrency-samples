@@ -4,7 +4,7 @@
 package main
 
 import (
-	"github.com/teocci/go-concurrency-samples/internal/cmd"
+	"github.com/teocci/go-concurrency-samples/src/cmd"
 )
 
 func main() {

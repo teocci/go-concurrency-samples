@@ -8,6 +8,16 @@ import (
 	"strconv"
 )
 
+const (
+	fieldFCCTime    = "FCCTime"
+	fieldGPSTime    = "GPSTime"
+	fieldTemp       = "Temp"
+	fieldBat        = "Bat"
+	fieldBatCurr    = "BatCurr"
+	fieldBatPercent = "BatPercent"
+	fieldBatTemp    = "BatTemp"
+)
+
 type FCC struct {
 	FCCTime        float32 `json:"fcc_time" csv:"FCCTime"`
 	GPSTime        float32 `json:"gps_time" csv:"GPSTime"`
@@ -38,6 +48,38 @@ func ParseFCC(data []string) *FCC {
 	}
 }
 
+func ParseFCCFields(data map[string]string) *FCC {
+	fccTime, _ := strconv.ParseFloat(data[fieldFCCTime], 32)
+	gpsTime, _ := strconv.ParseFloat(data[fieldGPSTime], 32)
+	temp, _ := strconv.ParseFloat(data[fieldTemp], 32)
+	batVol, _ := strconv.ParseFloat(data[fieldBat], 32)
+	batCurr, _ := strconv.ParseFloat(data[fieldBatCurr], 32)
+	batPct, _ := strconv.ParseFloat(data[fieldBatPercent], 32)
+	batTemp, _ := strconv.ParseFloat(data[fieldBatTemp], 32)
+
+	return &FCC{
+		FCCTime:        float32(fccTime),
+		GPSTime:        float32(gpsTime),
+		Temperature:    float32(temp),
+		BatVoltage:     float32(batVol),
+		BatCurrent:     float32(batCurr),
+		BatPercent:     float32(batPct),
+		BatTemperature: float32(batTemp),
+	}
+}
+
 func SortFCCByFCCTime(geos []FCC) {
 	sorts.ByUint64(FCCByFCCTime(geos))
+}
+
+func FCCFields() []string {
+	return []string{
+		fieldFCCTime,
+		fieldGPSTime,
+		fieldTemp,
+		fieldBat,
+		fieldBatCurr,
+		fieldBatPercent,
+		fieldBatTemp,
+	}
 }

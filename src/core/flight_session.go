@@ -29,11 +29,11 @@ type FSessionData struct {
 	DroneID         int     `json:"drone_id" csv:"drone_id" name:"drone_id"`
 	FlightSessionID int     `json:"flight_session_id" csv:"flight_session_id" name:"flight_session_id"`
 	DroneLat        float32 `json:"drone_lat" csv:"drone_lat" name:"drone_lat"`
-	DroneLong       float32 `json:"drone_long" csv:"drone_lat" name:"drone_lat"`
-	DroneAlt        float32 `json:"drone_alt" csv:"drone_lat" name:"drone_lat"`
-	DroneRoll       float32 `json:"drone_roll" csv:"drone_lat" name:"drone_lat"`
-	DronePitch      float32 `json:"drone_pitch" csv:"drone_lat" name:"drone_lat"`
-	DroneYaw        float32 `json:"drone_yaw" csv:"drone_lat" name:"drone_lat"`
+	DroneLong       float32 `json:"drone_long" csv:"drone_lat" name:"drone_long"`
+	DroneAlt        float32 `json:"drone_alt" csv:"drone_lat" name:"drone_alt"`
+	DroneRoll       float32 `json:"drone_roll" csv:"drone_lat" name:"drone_roll"`
+	DronePitch      float32 `json:"drone_pitch" csv:"drone_lat" name:"drone_pitch"`
+	DroneYaw        float32 `json:"drone_yaw" csv:"drone_lat" name:"drone_yaw"`
 	BatVoltage      float32 `json:"battery_voltage" csv:"battery_voltage" name:"battery_voltage"`
 	BatCurrent      float32 `json:"battery_current" csv:"battery_current" name:"battery_current"`
 	BatPercent      float32 `json:"battery_percentage" csv:"battery_percentage" name:"battery_percentage"`

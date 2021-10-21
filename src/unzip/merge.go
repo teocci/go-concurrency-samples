@@ -13,7 +13,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/teocci/go-concurrency-samples/internal/filemgr"
+	"github.com/teocci/go-concurrency-samples/src/filemgr"
 )
 
 const (

@@ -16,11 +16,11 @@ import (
 	"strings"
 
 	gopg "github.com/go-pg/pg/v10"
-	"github.com/teocci/go-concurrency-samples/internal/config"
-	"github.com/teocci/go-concurrency-samples/internal/filemgr"
-	"github.com/teocci/go-concurrency-samples/internal/logger"
-	"github.com/teocci/go-concurrency-samples/internal/model"
-	"github.com/teocci/go-concurrency-samples/internal/unzip"
+	"github.com/teocci/go-concurrency-samples/src/config"
+	"github.com/teocci/go-concurrency-samples/src/filemgr"
+	"github.com/teocci/go-concurrency-samples/src/logger"
+	"github.com/teocci/go-concurrency-samples/src/model"
+	"github.com/teocci/go-concurrency-samples/src/unzip"
 )
 
 type ExecutionMode int

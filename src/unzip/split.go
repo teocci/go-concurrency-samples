@@ -12,8 +12,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/teocci/go-concurrency-samples/internal/filemgr"
-	"github.com/teocci/go-concurrency-samples/internal/units"
+	"github.com/teocci/go-concurrency-samples/src/filemgr"
+	"github.com/teocci/go-concurrency-samples/src/units"
 )
 
 const (
