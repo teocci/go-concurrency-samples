@@ -7,8 +7,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/teocci/go-concurrency-samples/src/datamgr"
-	"github.com/teocci/go-concurrency-samples/src/model"
 	"io/fs"
 	"log"
 	"os"
@@ -19,7 +17,9 @@ import (
 
 	gopg "github.com/go-pg/pg/v10"
 	"github.com/teocci/go-concurrency-samples/src/config"
+	"github.com/teocci/go-concurrency-samples/src/datamgr"
 	"github.com/teocci/go-concurrency-samples/src/logger"
+	"github.com/teocci/go-concurrency-samples/src/model"
 	"github.com/teocci/go-concurrency-samples/src/unzip"
 )
 

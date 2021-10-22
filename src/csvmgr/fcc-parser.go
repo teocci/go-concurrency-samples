@@ -6,11 +6,12 @@ package csvmgr
 import (
 	"bytes"
 	"encoding/csv"
-	"github.com/teocci/go-concurrency-samples/src/datamgr"
-	"github.com/teocci/go-concurrency-samples/src/jobmgr"
 	"io"
 	"log"
 	"runtime"
+
+	"github.com/teocci/go-concurrency-samples/src/datamgr"
+	"github.com/teocci/go-concurrency-samples/src/jobmgr"
 )
 
 func FCCParser(in []byte) (records []datamgr.FCC) {

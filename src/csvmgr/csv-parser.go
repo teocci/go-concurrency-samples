@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"encoding/csv"
 	"fmt"
-	"github.com/teocci/go-concurrency-samples/src/jobmgr"
 	"io"
 	"log"
 	"os"
@@ -18,6 +17,7 @@ import (
 	"sync"
 
 	"github.com/teocci/go-concurrency-samples/src/datamgr"
+	"github.com/teocci/go-concurrency-samples/src/jobmgr"
 )
 
 type ItemRecord struct {
