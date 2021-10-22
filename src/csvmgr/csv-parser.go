@@ -17,7 +17,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/teocci/go-concurrency-samples/src/data"
+	"github.com/teocci/go-concurrency-samples/src/datamgr"
 )
 
 type ItemRecord struct {
@@ -79,13 +79,13 @@ func GenericParser(in []byte, out interface{}) error {
 	return nil
 }
 
-func Merge(geos []data.GEOData, fccs []data.FCC, rtts []*data.RTT) {
+func Merge(geos []datamgr.GEOData, fccs []datamgr.FCC, rtts []*datamgr.RTT) {
 	numWps := runtime.NumCPU()
-	jobs := make(chan data.RTT, numWps)
-	res := make(chan *data.RTT)
+	jobs := make(chan datamgr.RTT, numWps)
+	res := make(chan *datamgr.RTT)
 
 	var wg sync.WaitGroup
-	worker := func(jobs <-chan data.RTT, results chan<- *data.RTT) {
+	worker := func(jobs <-chan datamgr.RTT, results chan<- *datamgr.RTT) {
 		for {
 			select {
 			case job, ok := <-jobs: // you must check for readable state of the channel.
@@ -110,7 +110,7 @@ func Merge(geos []data.GEOData, fccs []data.FCC, rtts []*data.RTT) {
 
 	go func() {
 		for _, geo := range geos {
-			var rtt data.RTT
+			var rtt datamgr.RTT
 			var last int
 			last = findFCCData(geo, fccs, last, &rtt)
 
@@ -185,7 +185,7 @@ func normalizeRow(in []string, size int) (out []string) {
 }
 
 func hardStringTrimmer(str string) string {
-	str = strings.ReplaceAll(str, "\uFEFF", "")
+	//str = strings.ReplaceAll(str, "\uFEFF", "")
 	str = strings.ToValidUTF8(str, "")
 	str = strings.TrimSpace(str)
 	//space := regexp.MustCompile(`,$`)
@@ -217,11 +217,11 @@ func associateFields(row []string, header []string) (m map[string]string) {
 	return m
 }
 
-func findFCCData(geo data.GEOData, fccs []data.FCC, offset int, rtt *data.RTT) int {
+func findFCCData(geo datamgr.GEOData, fccs []datamgr.FCC, offset int, rtt *datamgr.RTT) int {
 	for i := offset; i < len(fccs); i++ {
 		if geo.FCCTime == fccs[i].FCCTime {
 			fcc := fccs[i]
-			rtt = &data.RTT{
+			rtt = &datamgr.RTT{
 				Lat:            geo.Lat,
 				Long:           geo.Long,
 				Alt:            geo.Alt,

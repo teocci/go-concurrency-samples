@@ -1,7 +1,7 @@
-// Package data
+// Package datamgr
 // Created by RTT.
 // Author: teocci@yandex.com on 2021-Sep-01
-package data
+package datamgr
 
 import (
 	"github.com/twotwotwo/sorts"

@@ -5,7 +5,7 @@ package cmdapp
 
 const (
 	Name  = "go-concurrency-samples"
-	Short = "Unzips a file or walks a directory and process the data inside"
+	Short = "Unzips a file or walks a directory and process the datamgr inside"
 	Long  = `This application unzip a file containing logs and csv files that will be merged and then inserted into a database.`
 
 	FName  = "filename"

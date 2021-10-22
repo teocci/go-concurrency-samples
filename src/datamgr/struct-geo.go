@@ -1,7 +1,7 @@
-// Package data
+// Package datamgr
 // Created by Teocci.
 // Author: teocci@yandex.com on 2021-Aug-29
-package data
+package datamgr
 
 import (
 	"fmt"

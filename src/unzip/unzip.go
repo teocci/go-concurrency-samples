@@ -14,10 +14,10 @@ import (
 
 // Extract will decompress a zip archive, moving all dir-files and folders
 // within the zip file source to an output directory destination.
-func Extract(src string, dest string) ([]string, error) {
-	var filenames []string
+func Extract(src string, dest string) (filenames []string, err error) {
+	var r *zip.ReadCloser
 
-	r, err := zip.OpenReader(src)
+	r, err = zip.OpenReader(src)
 	if err != nil {
 		return filenames, ErrFileCannotBeOpened(err.Error())
 	}

@@ -7,6 +7,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/teocci/go-concurrency-samples/src/datamgr"
+	"github.com/teocci/go-concurrency-samples/src/model"
 	"io/fs"
 	"log"
 	"os"
@@ -17,9 +19,7 @@ import (
 
 	gopg "github.com/go-pg/pg/v10"
 	"github.com/teocci/go-concurrency-samples/src/config"
-	"github.com/teocci/go-concurrency-samples/src/filemgr"
 	"github.com/teocci/go-concurrency-samples/src/logger"
-	"github.com/teocci/go-concurrency-samples/src/model"
 	"github.com/teocci/go-concurrency-samples/src/unzip"
 )
 
@@ -55,7 +55,6 @@ type Core struct {
 var fLogs map[string]*FlightLog
 
 func Start(f string, d string, mode ExecutionMode) error {
-	var err error
 	var dPath string
 
 	dPath = d
@@ -69,57 +68,69 @@ func Start(f string, d string, mode ExecutionMode) error {
 	var fp = f
 
 	if mode == EMMerge {
-		fmt.Println("Merging files:")
-		fp, _, err = unzip.Merge(f, dPath)
-		fmt.Println("----------")
-		if err != nil {
-			return err
-		}
+		fp = mergeFiles(f, dPath)
 	}
 
 	if mode > EMNormal {
-		fmt.Println("Unzipping files:")
 		dPath = filepath.Join(dPath, droneName)
-		files, err := unzip.Extract(fp, dPath)
-		if err != nil {
-			return err
-		}
-		if config.Verbose {
-			fmt.Println("Unzipped dirs and files:\n", strings.Join(files, "\n"))
-			fmt.Println("----------")
-		}
+		extractFiles(fp, dPath)
 	}
 
-	fLogs = map[string]*FlightLog{}
+	loadFlightLogs(dPath)
+	//spew.Dump(fLogs)
 
-	fmt.Println("Loading log files:")
-	err = filepath.WalkDir(dPath, loadLogPaths)
-	if err != nil {
-		return err
-	}
-	fmt.Println("----------")
-
-	// init db
+	// Init DataBase
 	db = model.Setup()
-	defer db.Close()
+	defer model.Close()(db)
 
-	//spew.Dump(fLogs)
-
-	fmt.Println("Process log files:")
-	for _, fl := range fLogs {
-		//processCSVFiles(fl)
-		//initCSVProcess(fl)
-		processCSVLogs(fl)
-	}
-	fmt.Println("----------")
-
-	//spew.Dump(fLogs)
+	processFlightLogs()
 
 	return nil
 }
 
-// loadLogPaths checks the dir tree and load log paths for each session
-func loadLogPaths(path string, f fs.DirEntry, e error) error {
+func extractFiles(fp string, path string) {
+	fmt.Println("Unzipping files:")
+	files, err := unzip.Extract(fp, path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if config.Verbose {
+		fmt.Println("Unzipped dirs and files:\n", strings.Join(files, "\n"))
+		fmt.Println("----------")
+	}
+}
+
+func mergeFiles(f string, path string) string {
+	fmt.Println("Merging files:")
+	fp, _, err := unzip.Merge(f, path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("----------")
+
+	return fp
+}
+
+func loadFlightLogs(path string) {
+	fmt.Println("Loading log files:")
+	fLogs = map[string]*FlightLog{}
+	err := filepath.WalkDir(path, findLogPaths)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("----------")
+}
+
+func processFlightLogs() {
+	fmt.Println("Process log files:")
+	for _, fl := range fLogs {
+		processCSVLogs(fl)
+	}
+	fmt.Println("----------")
+}
+
+// findLogPaths checks the dir tree and load log paths for each session
+func findLogPaths(path string, f fs.DirEntry, e error) error {
 	if e != nil {
 		return e
 	}
@@ -138,12 +149,8 @@ func loadLogPaths(path string, f fs.DirEntry, e error) error {
 		var re = regexp.MustCompile(regexSessionNum)
 		if re.MatchString(pName) {
 			id := re.FindStringSubmatch(pName)[1]
-			//fmt.Printf("SOLO: %#v\n", re.FindStringSubmatch(pName))
-			//fmt.Printf("%#v\n", re.SubexpNames())
 
-			//fmt.Println("id:", id)
-
-			f := strings.Split(ff, ".")[0]
+			file := strings.Split(ff, ".")[0]
 			if len(id) == 0 {
 				config.Log.Infoln(ErrorSessionIndexNotFound())
 			}
@@ -156,16 +163,11 @@ func loadLogPaths(path string, f fs.DirEntry, e error) error {
 				num = n
 			}
 
-			t, err := filemgr.Hash(id + droneName)
-			if err != nil {
-				return err
-			}
-
-			token := strconv.Itoa(int(t))
-			//println("sessionToken:", token)
+			token := datamgr.FNV32aS(id + droneName)
+			println("sessionToken:", token)
 
 			if _, ok := fLogs[token]; ok {
-				fLogs[token].Files[f] = path
+				fLogs[token].Files[file] = path
 			} else {
 				var fl = new(FlightLog)
 				fl.DroneID = droneID
@@ -174,7 +176,7 @@ func loadLogPaths(path string, f fs.DirEntry, e error) error {
 				fl.LogID = id
 				fl.LogNum = num
 				fl.Files = map[string]string{}
-				fl.Files[f] = path
+				fl.Files[file] = path
 				fl.setSessionDirIfEmpty(base)
 				fl.setLoggerDirIfEmpty(parent)
 

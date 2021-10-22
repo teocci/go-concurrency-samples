@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/teocci/go-concurrency-samples/src/data"
+	"github.com/teocci/go-concurrency-samples/src/datamgr"
 	"github.com/teocci/go-concurrency-samples/src/gcs"
 	"github.com/teocci/go-concurrency-samples/src/model"
 	"github.com/teocci/go-concurrency-samples/src/timemgr"
@@ -20,12 +20,12 @@ var (
 	total   int
 )
 
-func CrunchRTTData(records []data.RTT, flight *model.Flight) {
+func CrunchRTTData(records []datamgr.RTT, flight *model.Flight) {
 	inserts = 0
 
-	data.SortRTTByFCCTime(records)
+	datamgr.SortRTTByFCCTime(records)
 	for seq, r := range records {
-		var prevRec data.RTT
+		var prevRec datamgr.RTT
 		if seq == 0 {
 			baseFCCTime = timemgr.UnixTime(r.FCCTime)
 		}
@@ -49,7 +49,7 @@ func CrunchRTTData(records []data.RTT, flight *model.Flight) {
 	total += inserts
 }
 
-func parseNInsertIntoDB(seq int, currRTT data.RTT, prevRTT data.RTT, fs *model.Flight) (model.FlightRecord, bool) {
+func parseNInsertIntoDB(seq int, currRTT datamgr.RTT, prevRTT datamgr.RTT, fs *model.Flight) (model.FlightRecord, bool) {
 	currFCCTime := timemgr.UnixTime(currRTT.FCCTime)
 	lastUpdate := fs.Date.Add(currFCCTime.Sub(baseFCCTime))
 
@@ -92,7 +92,7 @@ func parseNInsertIntoDB(seq int, currRTT data.RTT, prevRTT data.RTT, fs *model.F
 		LastUpdate:     lastUpdate,
 	}
 
-	if seq < 5 {
+	if seq < 10 {
 		fmt.Printf("[%d]->%#v\n", seq, fsr)
 		//fmt.Printf("duration[%d], distance[%.2f], speed[%.2f], currFCCTime[%d], baseFCCTime[%d]\n", duration, distance, speed, currFCCTime, baseFCCTime)
 	}

@@ -5,7 +5,6 @@ package filemgr
 
 import (
 	"errors"
-	"hash/fnv"
 	"io/ioutil"
 	"os"
 )
@@ -112,13 +111,4 @@ func String(n int32) string {
 			return string(buf[pos:])
 		}
 	}
-}
-
-func Hash(s string) (uint32, error) {
-	h := fnv.New32a()
-	_, err := h.Write([]byte(s))
-	if err != nil {
-		return 0, err
-	}
-	return h.Sum32(), nil
 }

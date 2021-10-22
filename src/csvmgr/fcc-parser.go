@@ -6,14 +6,14 @@ package csvmgr
 import (
 	"bytes"
 	"encoding/csv"
-	"github.com/teocci/go-concurrency-samples/src/data"
+	"github.com/teocci/go-concurrency-samples/src/datamgr"
 	"github.com/teocci/go-concurrency-samples/src/jobmgr"
 	"io"
 	"log"
 	"runtime"
 )
 
-func FCCParser(in []byte) (records []data.FCC) {
+func FCCParser(in []byte) (records []datamgr.FCC) {
 	reader := csv.NewReader(bytes.NewReader(in))
 	rows, err := reader.ReadAll()
 	if err == io.EOF {
@@ -31,7 +31,7 @@ func FCCParser(in []byte) (records []data.FCC) {
 
 		if len(row) >= 79 {
 			fields := associateFields(row, header)
-			record := data.ParseFCCFields(fields)
+			record := datamgr.ParseFCCFields(fields)
 			records = append(records, *record)
 		}
 

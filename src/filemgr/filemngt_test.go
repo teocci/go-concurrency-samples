@@ -88,25 +88,25 @@ func TestDirExtractPathE(t *testing.T) {
 		},
 
 		{
-			"01.data.zip",
+			"01.datamgr.zip",
 			"",
 			true,
 		},
 
 		{
-			"D:/Projects/Go/go-split-merge/src/01.data.zip",
+			"D:/Projects/Go/go-split-merge/src/01.datamgr.zip",
 			"",
 			true,
 		},
 
 		{
-			"tmp/01.data.zip",
+			"tmp/01.datamgr.zip",
 			"",
 			true,
 		},
 
 		{
-			".tmp/01.data.zip",
+			".tmp/01.datamgr.zip",
 			"",
 			true,
 		},
@@ -192,19 +192,19 @@ func TestFileParentDirE(t *testing.T) {
 		},
 
 		{
-			"01.data.zip",
+			"01.datamgr.zip",
 			pwd,
 			false,
 		},
 
 		{
-			"D:/Projects/Go/go-split-merge/src/01.data.zip",
+			"D:/Projects/Go/go-split-merge/src/01.datamgr.zip",
 			"D:\\Projects\\Go\\go-split-merge\\src",
 			false,
 		},
 
 		{
-			"tmp/01.data.zip",
+			"tmp/01.datamgr.zip",
 			filepath.Join(pwd, "tmp"),
 			false,
 		},
@@ -291,14 +291,14 @@ func TestGetFilePath(t *testing.T) {
 		},
 
 		{
-			"01.data.zip",
-			filepath.Join(pwd, "01.data.zip"),
+			"01.datamgr.zip",
+			filepath.Join(pwd, "01.datamgr.zip"),
 			false,
 		},
 
 		{
-			"tmp/01.data.zip",
-			filepath.Join(pwd, "tmp/01.data.zip"),
+			"tmp/01.datamgr.zip",
+			filepath.Join(pwd, "tmp/01.datamgr.zip"),
 			false,
 		},
 	}

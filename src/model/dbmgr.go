@@ -50,6 +50,15 @@ func Setup() *gopg.DB {
 	return pg
 }
 
+func Close() func(db *gopg.DB) {
+	return func(db *gopg.DB) {
+		err := db.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
 func openPg(config pgx.ConnConfig) (*gopg.DB, error) {
 	var options gopg.Options
 

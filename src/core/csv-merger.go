@@ -7,17 +7,17 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/teocci/go-concurrency-samples/src/data"
+	"github.com/teocci/go-concurrency-samples/src/datamgr"
 	"github.com/teocci/go-concurrency-samples/src/jobmgr"
 	"github.com/teocci/go-concurrency-samples/src/model"
 )
 
-func MergeConcurrent(geos []data.GEOData, fccs []data.FCC, fs *model.Flight) (records []data.RTT) {
+func MergeConcurrent(geos []datamgr.GEOData, fccs []datamgr.FCC, fs *model.Flight) (records []datamgr.RTT) {
 	poolNumber := runtime.NumCPU()
 	dispatcher := jobmgr.NewDispatcher(poolNumber).Start(func(id int, job jobmgr.Job) error {
 		//fmt.Printf("%+v\n", job.Item.(ItemRecord).Record)
-		var record *data.RTT
-		geo := job.Item.(data.GEOData)
+		var record *datamgr.RTT
+		geo := job.Item.(datamgr.GEOData)
 		record = findFCCData(geo, fccs)
 		if record != nil {
 			record.DroneID = fs.DroneID
@@ -42,11 +42,11 @@ func MergeConcurrent(geos []data.GEOData, fccs []data.FCC, fs *model.Flight) (re
 	return records
 }
 
-func findFCCData(geo data.GEOData, fccs []data.FCC) *data.RTT {
+func findFCCData(geo datamgr.GEOData, fccs []datamgr.FCC) *datamgr.RTT {
 	for _, fcc := range fccs {
 		//fmt.Printf("geo.FCCTime[%.2f] - fcc.FCCTime[%.2f]\n", geo.FCCTime, fcc.FCCTime)
 		if geo.FCCTime == fcc.FCCTime {
-			return &data.RTT{
+			return &datamgr.RTT{
 				FCCTime:        geo.FCCTime,
 				Lat:            geo.Lat,
 				Long:           geo.Long,
@@ -67,13 +67,13 @@ func findFCCData(geo data.GEOData, fccs []data.FCC) *data.RTT {
 	return nil
 }
 
-func Merge(geos []data.GEOData, fccs []data.FCC, fs *model.Flight) (rtts []data.RTT) {
+func Merge(geos []datamgr.GEOData, fccs []datamgr.FCC, fs *model.Flight) (rtts []datamgr.RTT) {
 	numWps := runtime.NumCPU()
-	jobs := make(chan data.RTT, numWps)
-	res := make(chan data.RTT)
+	jobs := make(chan datamgr.RTT, numWps)
+	res := make(chan datamgr.RTT)
 
 	var wg sync.WaitGroup
-	worker := func(jobs <-chan data.RTT, results chan<- data.RTT) {
+	worker := func(jobs <-chan datamgr.RTT, results chan<- datamgr.RTT) {
 		for {
 			select {
 			case job, ok := <-jobs: // you must check for readable state of the channel.
@@ -98,7 +98,7 @@ func Merge(geos []data.GEOData, fccs []data.FCC, fs *model.Flight) (rtts []data.
 
 	go func() {
 		for i, geo := range geos {
-			var rtt *data.RTT
+			var rtt *datamgr.RTT
 			rtt = findFCCData(geo, fccs)
 			if rtt != nil {
 				rtt.DroneID = fs.DroneID

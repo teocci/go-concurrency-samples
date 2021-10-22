@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	chunkedFileName   = "./01.data.zip"
+	chunkedFileName   = "./01.datamgr.zip"
 	tmpDir            = "./tmp"
 	mergedFilePostfix = "-merged.zip"
 )
@@ -111,7 +111,7 @@ func Merge(src, dest string) ([]string, error) {
 		spew.Dump(header)
 
 		// calculate the bytes size of each chunk
-		// we are not going to rely on previous data and constant
+		// we are not going to rely on previous datamgr and constant
 		partSize := partInfo.Size()
 		partBytes := make([]byte, partSize)
 
@@ -237,7 +237,7 @@ func tmp() {
 	//	}
 	//
 	//	// calculate the bytes size of each chunk
-	//	// we are not going to rely on previous data and constant
+	//	// we are not going to rely on previous datamgr and constant
 	//
 	//	var chunkSize int64 = chunkInfo.Size()
 	//	chunkBufferBytes := make([]byte, chunkSize)

@@ -101,7 +101,7 @@ func Merge(src, dest string) (string, []string, error) {
 			fmt.Println("Processing file:", partInfo.Name())
 
 			// calculate the bytes size of each chunk
-			// we are not going to rely on previous data and constant
+			// we are not going to rely on previous datamgr and constant
 			partSize := partInfo.Size()
 			partBytes := make([]byte, partSize)
 

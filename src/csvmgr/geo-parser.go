@@ -6,14 +6,14 @@ package csvmgr
 import (
 	"bytes"
 	"encoding/csv"
-	"github.com/teocci/go-concurrency-samples/src/data"
+	"github.com/teocci/go-concurrency-samples/src/datamgr"
 	"github.com/teocci/go-concurrency-samples/src/jobmgr"
 	"io"
 	"log"
 	"runtime"
 )
 
-func GEOParser(in []byte) (records []data.GEOData) {
+func GEOParser(in []byte) (records []datamgr.GEOData) {
 	reader := csv.NewReader(bytes.NewReader(in))
 	rows, err := reader.ReadAll()
 	if err == io.EOF {
@@ -30,7 +30,7 @@ func GEOParser(in []byte) (records []data.GEOData) {
 		row := normalizeGEORow(item.Record.([]string))
 
 		fields := associateFields(row, header)
-		record := data.ParseGEOFields(fields)
+		record := datamgr.ParseGEOFields(fields)
 		records = append(records, *record)
 
 		return nil

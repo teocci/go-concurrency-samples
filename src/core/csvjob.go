@@ -6,21 +6,21 @@ package core
 
 //func initCSVProcess(fl *FlightLog) {
 //	// open the first file
-//	var geos []data.GEOData
-//	geoBuff := csvmgr.LoadDataBuff(fl.Files[data.GEOFile])
+//	var geos []datamgr.GEOData
+//	geoBuff := csvmgr.LoadDataBuff(fl.Files[datamgr.GEOFile])
 //	if err := gocsv.UnmarshalBytes(geoBuff, &geos); err != nil {
 //		log.Fatal(err)
 //	}
 //
 //	// open second file
-//	var fccs []data.FCC
-//	fccBuff := csvmgr.LoadDataBuff(fl.Files[data.FCCFile])
+//	var fccs []datamgr.FCC
+//	fccBuff := csvmgr.LoadDataBuff(fl.Files[datamgr.FCCFile])
 //	if err := gocsv.UnmarshalBytes(fccBuff, &fccs); err != nil {
 //		log.Fatal(err)
 //	}
 //
 //	// create a file writer
-//	var rtts []*data.RTT
+//	var rtts []*datamgr.RTT
 //	rttFN := fl.LogID + "_RTTdata"
 //	fmt.Println("rttFN:", rttFN)
 //	rttPath := filepath.Join(fl.LoggerDir, rttFN+".csv")
@@ -36,7 +36,7 @@ package core
 //	// TODO: Generate date as 2021-08-01, 13:00:00
 //	flightDate = timemgr.GenBaseDate(fl.LogNum)
 //	baseFCCTime = timemgr.UnixTime(geos[0].FCCTime)
-//	fl.SessionToken = data.FNV64aS(flightDate.String())
+//	fl.SessionToken = datamgr.FNV64aS(flightDate.String())
 //	fmt.Println(flightDate.Format("2006-01-02, 15:04:05"))
 //
 //	fs := &model.FlightSession{
@@ -55,12 +55,12 @@ package core
 //
 //	for _, geo := range geos {
 //		var last int
-//		var rtt *data.RTT
+//		var rtt *datamgr.RTT
 //		for j := last; j < len(fccs); j++ {
 //			if geo.FCCTime == fccs[j].FCCTime {
 //				fcc := fccs[j]
 //				last = j
-//				rtt = &data.RTT{
+//				rtt = &datamgr.RTT{
 //					DroneID:         1,
 //					FlightID: 1,
 //					Lat:             geo.Lat,
@@ -92,15 +92,15 @@ package core
 //
 //}
 
-//func mergeData(geos []data.GEOData, fccs []data.FCC) {
+//func mergeData(geos []datamgr.GEOData, fccs []datamgr.FCC) {
 //	for _, geo := range geos {
 //		var last int
-//		var rtt *data.RTT
+//		var rtt *datamgr.RTT
 //		for j := last; j < len(fccs); j++ {
 //			if geo.FCCTime == fccs[j].FCCTime {
 //				fcc := fccs[j]
 //				last = j
-//				rtt = &data.RTT{
+//				rtt = &datamgr.RTT{
 //					DroneID:         1,
 //					FlightID: 1,
 //					Lat:             geo.Lat,

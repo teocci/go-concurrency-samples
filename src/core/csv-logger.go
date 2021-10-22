@@ -5,24 +5,28 @@ package core
 
 import (
 	"fmt"
-	"github.com/teocci/go-concurrency-samples/src/csvmgr"
-	"github.com/teocci/go-concurrency-samples/src/data"
-	"github.com/teocci/go-concurrency-samples/src/model"
-	"github.com/teocci/go-concurrency-samples/src/timemgr"
 	"log"
 	"path/filepath"
+
+	"github.com/gocarina/gocsv"
+	"github.com/teocci/go-concurrency-samples/src/csvmgr"
+	"github.com/teocci/go-concurrency-samples/src/datamgr"
+	"github.com/teocci/go-concurrency-samples/src/model"
+	"github.com/teocci/go-concurrency-samples/src/timemgr"
 )
 
 func processCSVLogs(fl *FlightLog) {
 	fmt.Printf("fl.LogNum[%d]\n", fl.LogNum)
 	// open the first file
-	var geos []data.GEOData
-	//geoBuff := csvmgr.LineNormalizer(fl.Files[data.GEOFile])
-	geoBuff := csvmgr.LoadDataBuff(fl.Files[data.GEOFile])
-	geos = csvmgr.GEOParser(geoBuff)
-	//if err := gocsv.UnmarshalBytes(geoBuff, &geos); err != nil {
-	//	log.Fatal("error:", err)
-	//}
+	var geos []datamgr.GEOData
+	geoLines := csvmgr.LineCounter(fl.Files[datamgr.GEOFile])
+	geoBuff := csvmgr.UTFBufferFile(fl.Files[datamgr.GEOFile])
+	//geoBuff := csvmgr.BufferFile(fl.Files[datamgr.GEOFile])
+	//geoBuff := csvmgr.LineNormalizer(fl.Files[datamgr.GEOFile])
+	//geos = csvmgr.GEOParser(geoBuff)
+	if err := gocsv.UnmarshalBytes(geoBuff, &geos); err != nil {
+		log.Fatal("error:", err)
+	}
 	//if err := csvutil.Unmarshal(geoBuff, &geos); err != nil {
 	//	log.Fatal("error:", err)
 	//}
@@ -33,13 +37,15 @@ func processCSVLogs(fl *FlightLog) {
 	//}
 
 	// open second file
-	var fccs []data.FCC
-	//fccBuff := csvmgr.LineNormalizer(fl.Files[data.FCCFile])
-	fccBuff := csvmgr.LoadDataBuff(fl.Files[data.FCCFile])
-	fccs = csvmgr.FCCParser(fccBuff)
-	//if err := gocsv.UnmarshalBytes(fccBuff, &fccs); err != nil {
-	//	log.Fatal("error:", err)
-	//}
+	var fccs []datamgr.FCC
+	fccLines := csvmgr.LineCounter(fl.Files[datamgr.FCCFile])
+	fccBuff := csvmgr.UTFBufferFile(fl.Files[datamgr.FCCFile])
+	//fccBuff := csvmgr.BufferFile(fl.Files[datamgr.FCCFile])
+	//fccBuff := csvmgr.LineNormalizer(fl.Files[datamgr.FCCFile])
+	//fccs = csvmgr.FCCParser(fccBuff)
+	if err := gocsv.UnmarshalBytes(fccBuff, &fccs); err != nil {
+		log.Fatal("error:", err)
+	}
 	//if err := csvutil.Unmarshal(fccBuff, &fccs); err != nil {
 	//	log.Fatal("error:", err)
 	//}
@@ -49,9 +55,11 @@ func processCSVLogs(fl *FlightLog) {
 	//	}
 	//}
 
-	fmt.Printf("Geo Records: %d | FCC Records: %d\n", len(geos), len(fccs))
+	geoNumRecords, fccNumRecords := len(geos), len(fccs)
+	fmt.Printf("GEO Lines: %d | GEO Records: %d -> Diff[%d]\n", geoLines, geoNumRecords, geoLines-geoNumRecords)
+	fmt.Printf("FCC Lines: %d | FCC Records: %d -> Diff[%d]\n", fccLines, fccNumRecords, fccLines-fccNumRecords)
 	// create a file writer
-	var records []data.RTT
+	var records []datamgr.RTT
 	rttFN := fl.LogID + "_RTTdata"
 	fmt.Println("rttFN:", rttFN)
 	rttPath := filepath.Join(fl.LoggerDir, rttFN+".csv")
@@ -61,7 +69,7 @@ func processCSVLogs(fl *FlightLog) {
 	fl.Files[rttFN] = rttPath
 	// TODO: Generate date as 2021-08-01, 13:00:00
 	flightDate := timemgr.GenBaseDate(int(fl.LogNum))
-	fl.SessionToken = data.FNV64aS(flightDate.String())
+	fl.SessionToken = datamgr.FNV64aS(flightDate.String())
 	fs := &model.Flight{
 		DroneID:    fl.DroneID,
 		Hash:       fl.SessionToken,

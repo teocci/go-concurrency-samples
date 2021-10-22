@@ -1,7 +1,7 @@
-// Package data
+// Package datamgr
 // Created by RTT.
 // Author: teocci@yandex.com on 2021-Aug-30
-package data
+package datamgr
 
 import (
 	"crypto/md5"
@@ -9,7 +9,6 @@ import (
 	"crypto/sha256"
 	"crypto/sha512"
 	"encoding/hex"
-	"fmt"
 	"hash"
 	"hash/fnv"
 )
@@ -24,6 +23,11 @@ func FNV32a(s string) uint32 {
 	return uint32Hasher(fnv.New32a(), s)
 }
 
+// FNV32aS hashes using fnv64a algorithm and return a string
+func FNV32aS(s string) string {
+	return stringHasher(fnv.New32a(), s)
+}
+
 // FNV64 hashes using fnv64 algorithm
 func FNV64(s string) uint64 {
 	return uint64Hasher(fnv.New64(), s)
@@ -36,7 +40,7 @@ func FNV64a(s string) uint64 {
 
 // FNV64aS hashes using fnv64a algorithm and return a string
 func FNV64aS(s string) string {
-	return fmt.Sprintf("%x", FNV64a(s))
+	return stringHasher(fnv.New64a(), s)
 }
 
 // MD5 hashes using md5 algorithm
