@@ -164,7 +164,7 @@ func findLogPaths(path string, f fs.DirEntry, e error) error {
 			}
 
 			token := datamgr.FNV32aS(id + droneName)
-			println("sessionToken:", token)
+			//println("sessionToken:", token)
 
 			if _, ok := fLogs[token]; ok {
 				fLogs[token].Files[file] = path
