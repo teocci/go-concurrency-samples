@@ -35,6 +35,10 @@ func (c SCS) Delta(r SCS) Delta {
 	}
 }
 
+func (c SCS) Equals(r SCS) bool {
+	return c.Lat == r.Lat && c.Lon == r.Lon
+}
+
 func (c SCS) toRadians() SCS {
 	return SCS{
 		Lat: degreesToRadians(c.Lat),
@@ -50,10 +54,15 @@ func distance(orig, dest SCS, unit MetricLength) MetricLength {
 	orig = orig.toRadians()
 	dest = dest.toRadians()
 
-	delta := orig.Delta(dest)
+	var c float64
+	if orig.Equals(dest) {
+		c = 0
+	} else {
+		delta := orig.Delta(dest)
 
-	a := math.Pow(math.Sin(delta.Lat/2), 2) + math.Cos(orig.Lat)*math.Cos(dest.Lat)*math.Pow(math.Sin(delta.Lon/2), 2)
-	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+		a := math.Pow(math.Sin(delta.Lat/2), 2) + math.Cos(orig.Lat)*math.Cos(dest.Lat)*math.Pow(math.Sin(delta.Lon/2), 2)
+		c = 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+	}
 
 	var dist MetricLength
 	switch unit {
