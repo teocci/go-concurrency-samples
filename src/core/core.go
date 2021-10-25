@@ -112,8 +112,9 @@ func mergeFiles(f string, path string) string {
 }
 
 func loadFlightLogs(path string) {
-	fmt.Println("Loading log files:")
 	fLogs = map[string]*FlightLog{}
+
+	fmt.Println("Loading log files:")
 	err := filepath.WalkDir(path, findLogPaths)
 	if err != nil {
 		log.Fatal(err)

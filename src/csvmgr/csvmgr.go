@@ -35,7 +35,6 @@ func LineCounter(fn string) (count int) {
 	}
 }
 
-
 func UTFBufferFile(fn string) []byte {
 	f, err := utfmgr.OpenFile(fn, utfmgr.UTF8)
 	if err != nil {
