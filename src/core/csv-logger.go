@@ -58,13 +58,14 @@ func processCSVLogs(fl *FlightLog) {
 	geoNumRecords, fccNumRecords := len(geos), len(fccs)
 	fmt.Printf("GEO Lines: %d | GEO Records: %d -> Diff[%d]\n", geoLines, geoNumRecords, geoLines-geoNumRecords)
 	fmt.Printf("FCC Lines: %d | FCC Records: %d -> Diff[%d]\n", fccLines, fccNumRecords, fccLines-fccNumRecords)
+
 	// create a file writer
 	var records []datamgr.RTT
 	rttFN := fl.LogID + "_RTTdata"
 	fmt.Println("rttFN:", rttFN)
 	rttPath := filepath.Join(fl.LoggerDir, rttFN+".csv")
-	w := csvmgr.CreateFile(rttPath)
-	defer csvmgr.CloseFile()(w)
+	//w := csvmgr.CreateFile(rttPath)
+	//defer csvmgr.CloseFile()(w)
 
 	fl.Files[rttFN] = rttPath
 	// TODO: Generate date as 2021-08-01, 13:00:00
