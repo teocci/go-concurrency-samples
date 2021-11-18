@@ -40,7 +40,6 @@ const (
 
 var db *gopg.DB
 
-// Core is an instance of rtsp-simple-server.
 type Core struct {
 	ctx       context.Context
 	ctxCancel func()
